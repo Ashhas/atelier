@@ -35,10 +35,11 @@
 The chrome (header, tick strip, year-banner labels, days-left counter) reflects the **real current date** via `DateTime.now()`. The data (goals, year-goals, areas) is an ongoing list and **does not auto-archive** when the calendar rolls over. May → June changes the header but not the goals.
 
 ### 3.2 Areas (pockets)
-- Default seed on first launch: `Work`, `Body`, `Mind`, `Skill`, `Daily`, `Play`, `Life`, plus a single `Open` add-slot pocket pinned at the end.
+- **No seeded defaults.** First launch starts with an empty database — no areas, no `Open` pocket, no goals. Home renders a dedicated empty state (see §3.9).
+- The `Open` add-slot pocket is created lazily the first time the user adds a real area, and persists from then on.
 - Areas are **fully user-customizable**: rename, add new, reorder, remove. The `Open` pocket cannot be removed, reordered, or renamed.
-- "Add new area" replaces the prototype's empty-state copy on the `Open` pocket — tapping it opens a small input.
-- Removing an area cascade-deletes all its goals and year-goals.
+- Tapping the `Open` pocket opens a small input ("New area name…"). Submit creates a new `Area` row.
+- Removing an area cascade-deletes all its goals and year-goals. If the user removes their last real area, home reverts to the empty state and the `Open` pocket is also removed.
 
 ### 3.3 Goals
 - **Month goals** are an ongoing list, not bucketed by month. Each goal has a `title`, `starred` flag, and `addedAt` timestamp.
@@ -67,7 +68,23 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 - Bottom sheet with backdrop, slide-up animation.
 - Theme: Light / Dark segmented control.
 - Font scale: Small / Medium / Large segmented control (multipliers 0.92, 1.0, 1.10).
-- "Reset all data" with two-step confirm — truncates all Drift tables + clears SharedPreferences and re-seeds default areas.
+- "Reset all data" with two-step confirm — truncates all Drift tables and clears SharedPreferences. Home returns to the blank-slate empty state.
+
+### 3.9 First-launch / blank-slate empty state
+
+When `areas` is empty, `HomeScreen` renders `HomeEmptyState` in place of the pocket grid. The chrome (`HomeTopBar` with month/year, `DaysLeftLabel`, `SettingsGearButton`, plus `TickStrip`) **stays visible** — the app should still tell you "today is May 2 · 29 days left" from second one.
+
+Composition (built from the existing design vocabulary — dashed hairline borders, JetBrains Mono small-caps eyebrows, Fraunces italic display, Inter sans body, the existing ink-pill button style):
+
+- A large dashed-border container occupying the grid area: `1px dashed C.rule`, `borderRadius: 14`, full width with the same 22px horizontal padding as the grid, vertical padding ~28px.
+- Vertically and horizontally centered content stack (gap 14px):
+  - **Eyebrow** — `MonoLabel` (existing widget) reading `BLANK SLATE` at 9px, letter-spacing 1.8, `C.mute`.
+  - **Italic display title** — `SerifTitle` (existing widget) reading `Your year, one pocket at a time.` at ~26px italic, `letterSpacing -0.4`, `lineHeight 1.2`, `C.ink`. Max-width constrained so it wraps to two lines.
+  - **Sans body** — Inter 13px, `C.sub`, `lineHeight 1.4`, max-width ~240px, centered: `Pockets are areas of life — Work, Body, Mind, anything you want. Tap below to start your first one.`
+  - **Primary action** — pill button matching the existing `C.ink` "Done" pill in manage mode, scaled slightly: `+ ADD YOUR FIRST POCKET` in JetBrains Mono caps 10px / letter-spacing 1.4 / weight 600, `padding 12px 18px`, `borderRadius 999`, `background: C.ink`, `color: C.bg`.
+- Tapping the action button enters the same add-area flow as tapping `Open` (small input → submit → create `Area`). On the first successful add: also create the `Open` add-slot row, then home transitions to the normal grid view.
+- The settings gear remains active in the empty state so theme / font scale can be set before adding the first pocket.
+- `HomeEmptyState` gets its own widget file at `lib/ui/features/home/widgets/empty_state/home_empty_state.dart`, with sub-components in the same folder (`home_empty_state_eyebrow.dart`, `home_empty_state_body.dart`, `home_empty_state_action.dart`) per the one-widget-per-file rule.
 
 ### 3.8 Tick strip
 - 28 / 30 / 31 vertical ticks for the current month. Today's tick is `2px` wide, full height (14px), painted with the accent colour.
@@ -204,7 +221,7 @@ Font scale wraps the app subtree in a `MediaQuery` override of `textScaler` (S=0
 
 The full widget breakdown lives in the project layout (Section 11). Roles in brief:
 
-- **Home grid** — `Pocket` composes `PocketHeader`, `PocketYearPreview`, `PocketGoalsPreview`, `PocketRemoveBadge`, `PocketEmptyState`. `PocketGrid` wraps `ReorderableGridView` and handles drag-reorder.
+- **Home grid** — `Pocket` composes `PocketHeader`, `PocketYearPreview`, `PocketGoalsPreview`, `PocketRemoveBadge`, `PocketEmptyState`. `PocketGrid` wraps `ReorderableGridView` and handles drag-reorder. When `areas` is empty, `HomeScreen` swaps the grid for `HomeEmptyState` (composed of `HomeEmptyStateEyebrow`, `HomeEmptyStateBody`, `HomeEmptyStateAction`); chrome (top bar + tick strip) is unchanged.
 - **Home top bar** — `HomeTopBar` composes the month/year title, `DaysLeftLabel`, and either `SettingsGearButton` or `DonePillButton` depending on manage mode.
 - **Tick strip** — `TickStrip` composes `TickStripBaseline`, one `TickStripTickMark` per day of the current month, and a `TickStripTodayLabel` above today's tick.
 - **Detail goals** — `GoalRow` composes `GoalRowStarButton`, the serif title, `GoalRowDaysLabel`, and conditionally renders `GoalRowActions` (when expanded) or `GoalRowEditor` (when editing). `GoalsEmptyState` for empty list.
@@ -222,12 +239,12 @@ The full widget breakdown lives in the project layout (Section 11). Roles in bri
 - **Remove area:** manage × → `AreasCubit.remove(areaId)` triggers a transactional cascade that also calls into `GoalsCubit` and `YearGoalsCubit` to drop their entries (or, simpler, repos cascade and all three cubits reload from disk after the call).
 - **Year-banner toggle:** tap → `YearGoalsCubit.toggleExpand(id)` → persist → emit.
 - **Theme / font scale:** segmented tap → `SettingsCubit.setTheme(...)` / `setFontScale(...)` → SharedPreferences write-through → emit → `BlocBuilder` at the `MaterialApp.router` level rebuilds with new `ThemeData`.
-- **Reset:** confirm → all Drift tables truncated + re-seeded + prefs cleared → all cubits `reload()` → emit fresh states → home re-renders.
+- **Reset:** confirm → all Drift tables truncated + prefs cleared → all cubits `reload()` → emit fresh states → home re-renders the empty state (no re-seed, matches first-launch behaviour).
 - **Manage mode:** `ManageModeCubit` is a tiny UI-only cubit holding `bool isManaging` (and optionally drag state). HomeScreen reads it via `BlocBuilder`. Long-press → `enter()`, tap-outside / Done → `exit()`. Not persisted.
 
 ## 9. Error handling & edge cases
 
-- **First launch:** Drift `areas` table empty → seed 8 default areas (Work, Body, Mind, Skill, Daily, Play, Life, Open) with order 0..7. No sample goals.
+- **First launch:** Drift `areas` table empty → no seeding. Home renders `HomeEmptyState` (see §3.9). The first user-added area lazily creates both the `Area` row and the pinned `Open` add-slot row in the same transaction.
 - **Empty pocket:** "Empty" placeholder (or "Open · add" for the add slot).
 - **Empty detail:** dashed "No year goal yet for {area}" + "Nothing this month yet".
 - **Empty input:** discarded silently.
@@ -237,7 +254,7 @@ The full widget breakdown lives in the project layout (Section 11). Roles in bri
 
 ## 10. Testing strategy
 
-- **Unit tests** — each repository: CRUD round-trip, order preservation, cascade delete on area removal, seed-on-empty idempotency, reset clears everything.
+- **Unit tests** — each repository: CRUD round-trip, order preservation, cascade delete on area removal, first-add transaction creates both the `Area` and the `Open` slot, reset clears everything (and home transitions back to empty state).
 - **Cubit tests** — using `bloc_test`: sort order emitted on state change (starred-first then insertion), reorder math, toggle-star, cascade delete propagation across the three goal-related cubits, settings cubit emits on theme/font-scale change, manage-mode cubit toggles correctly.
 - **Widget tests** — Pocket renders preview correctly with starred items styled; manage-mode entry / exit / × cascade; tick strip computes today's position and label; settings sheet wires up to cubits; detail add bar switches month↔year target. Use `BlocProvider.value` with mock cubits in tests.
 - **Golden tests** — light + dark renders of HomeScreen and DetailScreen at fixed phone dimensions to catch palette / typography regressions.
@@ -282,8 +299,8 @@ atelier/
         drift_year_goal_repository.dart
       prefs/
         prefs_settings_repository.dart
-      seed/
-        default_areas_seeder.dart
+      open_slot/
+        open_slot_creator.dart                # creates the Open add-slot row when the user's first area is added
     utils/
       date_utils.dart                      # daysInMonth, daysSince helpers
       uuid.dart                            # uuid v4 wrapper
@@ -317,6 +334,11 @@ atelier/
               pocket_empty_state.dart
             grid/
               pocket_grid.dart             # ReorderableGridView wrapper
+            empty_state/
+              home_empty_state.dart        # rendered when areas list is empty
+              home_empty_state_eyebrow.dart
+              home_empty_state_body.dart
+              home_empty_state_action.dart
         detail/
           detail_container.dart
           detail_screen.dart
@@ -411,7 +433,7 @@ atelier/
 
 1. Theme + typography + base widgets (Segmented, MonoLabel, SerifTitle)
 2. Domain models + repository interfaces
-3. Drift setup (tables, codegen, database root) + Drift impls + seed-on-empty
+3. Drift setup (tables, codegen, database root) + Drift impls; no seeding (first launch is empty)
 4. SharedPreferences settings repo
 5. Cubits + states wired to repos, registered via `MultiBlocProvider` at app root
 6. HomeScreen scaffold + TickStrip + Pocket (read-only first)

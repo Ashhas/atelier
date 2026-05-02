@@ -83,6 +83,20 @@ class PocketGrid extends StatelessWidget {
     final categoriesCubit = context.read<GoalCategoriesCubit>();
     final manageCubit = context.read<ManageModeCubit>();
 
+    void reorderTo(int from, int to) {
+      if (from == to) return;
+      final reordered = List.of(visibleCategories);
+      final moved = reordered.removeAt(from);
+      reordered.insert(to, moved);
+      // Only real pocket ids are passed to the cubit; the Open slot is
+      // either hidden (manage mode) or handled separately by OpenSlotCreator.
+      final realIds = reordered
+          .where((c) => !c.isAddSlot)
+          .map((c) => c.id)
+          .toList();
+      categoriesCubit.reorder(realIds);
+    }
+
     return MasonryGridView.count(
       crossAxisCount: 2,
       mainAxisSpacing: AtelierSpacing.base, // 8
@@ -102,7 +116,7 @@ class PocketGrid extends StatelessWidget {
             .where((y) => y.expanded)
             .toList(growable: false);
         final collapsed = pocketYearGoals.length - expanded.length;
-        return Pocket(
+        final pocket = Pocket(
           key: ValueKey(category.id),
           category: category,
           yearGoalCount: pocketYearGoals.length,
@@ -120,6 +134,36 @@ class PocketGrid extends StatelessWidget {
           onRemove: () => categoriesCubit.removePocket(category.id),
           onLongPress: () {
             if (!category.isAddSlot) manageCubit.enter();
+          },
+        );
+
+        // Drag-reorder is only active in manage mode and never on the Open
+        // add-slot. In manage mode the add-slot is already filtered out of
+        // visibleCategories, so checking !isAddSlot is defensive.
+        if (!isManaging || category.isAddSlot) return pocket;
+
+        return DragTarget<int>(
+          onWillAcceptWithDetails: (d) => d.data != index,
+          onAcceptWithDetails: (d) => reorderTo(d.data, index),
+          builder: (context, candidate, rejected) {
+            return LongPressDraggable<int>(
+              data: index,
+              feedback: Opacity(
+                opacity: 0.85,
+                child: Material(
+                  color: Colors.transparent,
+                  child: SizedBox(
+                    width:
+                        MediaQuery.of(context).size.width / 2 -
+                        AtelierSpacing.x3l -
+                        AtelierSpacing.base / 2,
+                    child: pocket,
+                  ),
+                ),
+              ),
+              childWhenDragging: Opacity(opacity: 0.3, child: pocket),
+              child: pocket,
+            );
           },
         );
       },

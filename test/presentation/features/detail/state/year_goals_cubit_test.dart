@@ -3,7 +3,6 @@ import 'package:atelier/data/repositories/drift_goal_category_repository.dart';
 import 'package:atelier/data/repositories/drift_year_goal_repository.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
-import 'package:atelier/presentation/features/detail/state/year_goals_state.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -12,8 +12,10 @@ import 'package:atelier/presentation/features/settings/state/settings_cubit.dart
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
 import 'package:atelier/services/data_resetter.dart';
 import 'package:atelier/services/open_slot_creator.dart';
+import 'package:atelier/theme/atelier_colors.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,6 +38,19 @@ class _AtelierAppState extends State<AtelierApp> {
   late final OpenSlotCreator _openSlot;
   late final DataResetter _resetter;
   late final GoRouter _router;
+
+  /// Resolves the effective brightness for the system UI overlay, accounting
+  /// for ThemeMode.system using the platform's reported brightness.
+  bool _resolveIsDark(BuildContext context, ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.dark:
+        return true;
+      case ThemeMode.light:
+        return false;
+      case ThemeMode.system:
+        return MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    }
+  }
 
   @override
   void initState() {
@@ -72,16 +87,37 @@ class _AtelierAppState extends State<AtelierApp> {
         child: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, state) {
             final scale = state.settings.fontScale.multiplier;
-            return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(scale)),
-              child: MaterialApp.router(
-                title: 'Atelier',
-                theme: AtelierTheme.light(),
-                darkTheme: AtelierTheme.dark(),
-                themeMode: state.settings.themeMode,
-                routerConfig: _router,
+            final isDark = _resolveIsDark(context, state.settings.themeMode);
+            final palette = isDark ? AtelierColors.dark : AtelierColors.light;
+            // Edge-to-edge bars: transparent overlay so the scaffold colour
+            // shows through on both the status bar and the system nav bar.
+            // Icon brightness is the inverse of the surface brightness so
+            // the system icons stay legible.
+            final overlayStyle = SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+              systemNavigationBarColor: palette.bg,
+              systemNavigationBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              systemNavigationBarDividerColor: palette.bg,
+            );
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: overlayStyle,
+              child: MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: TextScaler.linear(scale)),
+                child: MaterialApp.router(
+                  title: 'Atelier',
+                  theme: AtelierTheme.light(),
+                  darkTheme: AtelierTheme.dark(),
+                  themeMode: state.settings.themeMode,
+                  routerConfig: _router,
+                ),
               ),
             );
           },

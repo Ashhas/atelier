@@ -65,7 +65,7 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 - Bottom sheet with backdrop, slide-up animation.
 - Theme: Light / Dark segmented control.
 - Font scale: Small / Medium / Large segmented control (multipliers 0.92, 1.0, 1.10).
-- "Reset all data" with two-step confirm — clears all Hive boxes + SharedPreferences and re-seeds default areas.
+- "Reset all data" with two-step confirm — truncates all Drift tables + clears SharedPreferences and re-seeds default areas.
 
 ### 3.8 Tick strip
 - 28 / 30 / 31 vertical ticks for the current month. Today's tick is `2px` wide, full height (14px), painted with the accent colour.
@@ -102,7 +102,7 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 
 **Key design choices:**
 
-- **Repository pattern** — `abstract class GoalRepository` defines `Future<List<Goal>> all()`, `add(Goal)`, `update(Goal)`, `delete(String id)`, etc. The Hive impl ships v1; a Supabase impl can drop in later by implementing the same interface.
+- **Repository pattern** — `abstract class GoalRepository` defines `Future<List<Goal>> all()`, `add(Goal)`, `update(Goal)`, `delete(String id)`, etc. The Drift impl ships v1; a Supabase impl can drop in later by implementing the same interface.
 - **flutter_bloc with Cubits (no events)** — the prototype's giant `AtelierYear` component with 8 useState calls maps poorly to a single Flutter widget. Cubits split state into focused units that widgets subscribe to via `BlocBuilder` / `BlocSelector`. No event classes — Cubits expose plain methods (`addGoal`, `toggleStar`, `reorderArea`) that emit new state. Equivalent reactive model, less boilerplate than full Bloc.
 - **State immutability** — each Cubit's state is an immutable class (`Equatable`-based) holding the slice it owns. Lists inside states are unmodifiable. `emit` always produces a new instance.
 - **DI at app root** — repositories are constructed once in `main.dart`, then injected into Cubits via `MultiBlocProvider` at the top of the widget tree. No service locator (`get_it` / `provider`) in v1.
@@ -200,35 +200,17 @@ Font scale wraps the app subtree in a `MediaQuery` override of `textScaler` (S=0
 
 ### Reusable widgets (each in its own file under the path implied by Section 11)
 
-- `Pocket` (`features/home/widgets/pocket.dart`) — single grid card. Composes `PocketHeader`, `PocketYearPreview`, `PocketGoalsPreview`, `PocketRemoveBadge`. Long-press → `onLongPress` callback.
-- `PocketHeader` (`pocket_header.dart`) — area label + count.
-- `PocketYearPreview` (`pocket_year_preview.dart`) — up to 2 visible 2026 year goals + dashed divider, or "no 2026 goal" empty state.
-- `PocketGoalsPreview` (`pocket_goals_preview.dart`) — up to 3 month goals (starred chip vs normal chip) + "+N more" overflow, or "Empty" / "Open · add" empty states.
-- `PocketRemoveBadge` (`pocket_remove_badge.dart`) — the × shown in manage mode.
-- `GoalRow` (`features/detail/widgets/goal_row.dart`) — star icon, serif title, days-since-added mono label. Tap → toggle expanded action row.
-- `GoalRowActions` (`goal_row_actions.dart`) — Edit / Remove buttons, shown when row is expanded.
-- `GoalRowEditor` (`goal_row_editor.dart`) — inline text input with Save / Cancel, shown when row is being edited.
-- `YearBanner` (`features/detail/widgets/year_banner.dart`) — compact (one-line italic) ↔ expanded (full italic title + × remove).
-- `YearBannerCollapsed` (`year_banner_collapsed.dart`) — the compact form.
-- `YearBannerExpanded` (`year_banner_expanded.dart`) — the expanded form.
-- `TickStrip` (`features/home/widgets/tick_strip.dart`) — composes `TickStripBaseline` + `TickStripTickMark` (one per day) + `TickStripTodayLabel`.
-- `TickStripTickMark` (`tick_strip_tick_mark.dart`) — single tick (today / major / minor variants).
-- `TickStripTodayLabel` (`tick_strip_today_label.dart`) — `D{n} · {pct}%` mono label above today's tick.
-- `AddBar` (`features/detail/widgets/add_bar.dart`) — composes `AddBarSwitch` + `AddBarInput` / `AddBarPlaceholder`.
-- `AddBarSwitch` (`add_bar_switch.dart`) — 2-option MONTH/YEAR pill (uses `Segmented`).
-- `AddBarInput` (`add_bar_input.dart`) — TextField in active state.
-- `AddBarPlaceholder` (`add_bar_placeholder.dart`) — "+ Add to …" tap target.
-- `Segmented` (`widgets/segmented.dart`) — generic 2/3-option pill switch (used by AddBarSwitch, ThemeSelector, FontScaleSelector).
-- `SegmentedOption` (`segmented_option.dart`) — single option button.
-- `MonoLabel` (`widgets/mono_label.dart`) — JetBrains Mono small-caps label.
-- `SerifTitle` (`widgets/serif_title.dart`) — Fraunces italic title.
-- `HomeTopBar` (`features/home/widgets/home_top_bar.dart`) — month name + year + days-left + settings gear / Done pill.
-- `DetailTopBar` (`features/detail/widgets/detail_top_bar.dart`) — back arrow + area title + count.
-- `ThemeSelector` (`features/settings/widgets/theme_selector.dart`) — Light / Dark segmented.
-- `FontScaleSelector` (`features/settings/widgets/font_scale_selector.dart`) — S / M / L segmented.
-- `ResetDataButton` (`features/settings/widgets/reset_data_button.dart`) — two-step destructive button.
-- `SettingsBackdrop` (`features/settings/widgets/settings_backdrop.dart`) — dimmed tap-to-dismiss backdrop.
-- `SettingsHandle` (`features/settings/widgets/settings_handle.dart`) — the small drag handle at the top of the sheet.
+The full widget breakdown lives in the project layout (Section 11). Roles in brief:
+
+- **Home grid** — `Pocket` composes `PocketHeader`, `PocketYearPreview`, `PocketGoalsPreview`, `PocketRemoveBadge`, `PocketEmptyState`. `PocketGrid` wraps `ReorderableGridView` and handles drag-reorder.
+- **Home top bar** — `HomeTopBar` composes the month/year title, `DaysLeftLabel`, and either `SettingsGearButton` or `DonePillButton` depending on manage mode.
+- **Tick strip** — `TickStrip` composes `TickStripBaseline`, one `TickStripTickMark` per day of the current month, and a `TickStripTodayLabel` above today's tick.
+- **Detail goals** — `GoalRow` composes `GoalRowStarButton`, the serif title, `GoalRowDaysLabel`, and conditionally renders `GoalRowActions` (when expanded) or `GoalRowEditor` (when editing). `GoalsEmptyState` for empty list.
+- **Detail year banners** — `YearBanner` switches between `YearBannerCollapsed` and `YearBannerExpanded`. `YearBannerEmptyState` when none exist for the area.
+- **Detail add bar** — `AddBar` composes `AddBarSwitch` (uses `Segmented`) plus either `AddBarInput` or `AddBarPlaceholder`.
+- **Detail top bar** — `DetailTopBar` composes `DetailBackButton` + serif title + `DetailCountLabel`.
+- **Settings sheet** — `SettingsSheet` composes `SettingsBackdrop`, `SettingsHandle`, `SettingsHeader`, `ThemeSelector`, `FontScaleSelector`, and `ResetDataButton`. The button swaps to `ResetDataConfirm` after first tap.
+- **Common atoms** — `Segmented` + `SegmentedOption` (the generic pill switch); `MonoLabel` (JetBrains Mono small-caps); `SerifTitle` (Fraunces italic); `PhoneSafeArea` (handles the device status-bar inset).
 
 ## 8. Interactions / data flow
 
@@ -261,29 +243,34 @@ Font scale wraps the app subtree in a `MediaQuery` override of `textScaler` (S=0
 
 ## 11. Project layout
 
+Patterned after the in-house `Plastic-Avengers-Flutter` project (`lib/ui/{features,common}`, `lib/services`, `lib/models`, `lib/theme`, cubits inside the feature in a `state/` folder, widgets nested by purpose).
+
 ```
 atelier/
   lib/
-    main.dart
-    app.dart                    # MaterialApp.router + theme switching
-    routing.dart                # go_router config
+    main.dart                              # entrypoint: init DB, prefs, run AtelierApp
+    config/
+      atelier_app.dart                     # MaterialApp.router + MultiBlocProvider
+      router.dart                          # go_router config
     theme/
-      colors.dart               # AtelierPalette + light/dark
-      typography.dart           # font helpers (Fraunces, Inter, JetBrains Mono)
-      app_theme.dart            # ThemeData builders
-    domain/
+      atelier_palette.dart                 # AtelierPalette type
+      atelier_colors.dart                  # light + dark palette constants
+      atelier_typography.dart              # Fraunces / Inter / JetBrains Mono helpers
+      atelier_theme.dart                   # ThemeData builders for light + dark
+    models/
       area.dart
       goal.dart
       year_goal.dart
       app_settings.dart
-    data/
-      repositories/
-        area_repository.dart            # abstract
-        goal_repository.dart
-        year_goal_repository.dart
-        settings_repository.dart
+      enums/
+        font_scale.dart
+    services/
+      area_repository.dart                 # abstract
+      goal_repository.dart                 # abstract
+      year_goal_repository.dart            # abstract
+      settings_repository.dart             # abstract
       drift/
-        atelier_database.dart            # @DriftDatabase root
+        atelier_database.dart              # @DriftDatabase root
         tables/
           areas_table.dart
           goals_table.dart
@@ -293,50 +280,130 @@ atelier/
         drift_year_goal_repository.dart
       prefs/
         prefs_settings_repository.dart
-      seed.dart                          # default-areas seeding
-    cubits/
-      areas/
-        areas_cubit.dart
-        areas_state.dart
-      goals/
-        goals_cubit.dart
-        goals_state.dart
-      year_goals/
-        year_goals_cubit.dart
-        year_goals_state.dart
-      settings/
-        settings_cubit.dart
-        settings_state.dart
-      manage_mode/
-        manage_mode_cubit.dart           # UI-only state, not persisted
-    features/
-      home/
-        home_screen.dart
-        widgets/
-          pocket.dart
-          tick_strip.dart
-          home_top_bar.dart
-      detail/
-        detail_screen.dart
-        widgets/
-          goal_row.dart
-          year_banner.dart
-          add_bar.dart
-      settings/
-        settings_sheet.dart
-    widgets/
-      segmented.dart
-      mono_label.dart
-      serif_title.dart
+      seed/
+        default_areas_seeder.dart
+    utils/
+      date_utils.dart                      # daysInMonth, daysSince helpers
+      uuid.dart                            # uuid v4 wrapper
+    ui/
+      features/
+        home/
+          home_container.dart              # creates cubits, hosts BlocProvider, builds HomeScreen
+          home_screen.dart                 # pure UI, reads from cubits via BlocBuilder
+          state/
+            home_cubit.dart                # composes Areas + Goals + YearGoals reads for the grid
+            home_state.dart
+            manage_mode_cubit.dart         # UI-only manage state
+            manage_mode_state.dart
+          widgets/
+            top_bar/
+              home_top_bar.dart
+              days_left_label.dart
+              settings_gear_button.dart
+              done_pill_button.dart
+            tick_strip/
+              tick_strip.dart
+              tick_strip_baseline.dart
+              tick_strip_tick_mark.dart
+              tick_strip_today_label.dart
+            pocket/
+              pocket.dart
+              pocket_header.dart
+              pocket_year_preview.dart
+              pocket_goals_preview.dart
+              pocket_remove_badge.dart
+              pocket_empty_state.dart
+            grid/
+              pocket_grid.dart             # ReorderableGridView wrapper
+        detail/
+          detail_container.dart
+          detail_screen.dart
+          state/
+            detail_cubit.dart
+            detail_state.dart
+          widgets/
+            top_bar/
+              detail_top_bar.dart
+              detail_back_button.dart
+              detail_count_label.dart
+            year_banner/
+              year_banner.dart
+              year_banner_collapsed.dart
+              year_banner_expanded.dart
+              year_banner_empty_state.dart
+            goals/
+              goal_row.dart
+              goal_row_actions.dart
+              goal_row_editor.dart
+              goal_row_star_button.dart
+              goal_row_days_label.dart
+              goals_empty_state.dart
+            add_bar/
+              add_bar.dart
+              add_bar_switch.dart
+              add_bar_input.dart
+              add_bar_placeholder.dart
+        settings/
+          settings_sheet.dart              # the shell — modal bottom sheet
+          state/
+            settings_cubit.dart
+            settings_state.dart
+          widgets/
+            settings_handle.dart
+            settings_backdrop.dart
+            settings_header.dart
+            theme_selector.dart
+            font_scale_selector.dart
+            reset_data_button.dart
+            reset_data_confirm.dart
+        cubits/
+          areas/
+            areas_cubit.dart               # global area list (CRUD + reorder)
+            areas_state.dart
+          goals/
+            goals_cubit.dart               # global goals list (CRUD + sort)
+            goals_state.dart
+          year_goals/
+            year_goals_cubit.dart
+            year_goals_state.dart
+      common/
+        segmented/
+          segmented.dart
+          segmented_option.dart
+        typography/
+          mono_label.dart
+          serif_title.dart
+        layout/
+          phone_safe_area.dart             # top status-bar inset wrapper
   test/
-    repositories/
-    cubits/
-    widgets/
+    services/                              # repository tests
+      drift/
+      prefs/
+    ui/
+      features/
+        home/
+          state/
+          widgets/
+        detail/
+          state/
+          widgets/
+        settings/
+          state/
+          widgets/
+      common/
     golden/
   docs/
-    design-handoff/                       # original prototype + chats
-    superpowers/specs/                    # this file
+    design-handoff/                        # original prototype + chats
+    superpowers/specs/                     # this file
 ```
+
+**Notes on layout choices (matching Plastic Avengers conventions):**
+- `lib/services/` instead of `lib/data/repositories/` — abstract repository interfaces sit at the top, drift / prefs implementations live in subfolders.
+- `lib/ui/features/<feature>/` instead of `lib/features/<feature>/` — keeps presentation cleanly separate from data.
+- Each feature has a `<feature>_container.dart` (creates / provides cubits) + `<feature>_screen.dart` (pure UI). This mirrors `campaigns_container.dart` + `campaigns_screen.dart` in the reference project.
+- Cubits live in `state/` inside their owning feature when feature-scoped, or in `lib/ui/features/cubits/` when global (areas / goals / year-goals are app-wide).
+- Widgets nest by purpose subgroup (e.g. `widgets/top_bar/`, `widgets/pocket/`, `widgets/year_banner/`) to keep file lists short and intent-readable. Same pattern as `widgets/cards/active_campaign_card/` in the reference.
+- `lib/common/` instead of `lib/widgets/` for shared atoms — and grouped by kind (`segmented/`, `typography/`).
 
 ## 12. Build sequence (rough)
 

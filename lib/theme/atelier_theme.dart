@@ -11,7 +11,9 @@ class AtelierTheme {
   /// Returns the [AtelierPalette] matching the current theme brightness.
   static AtelierPalette paletteOf(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? AtelierColors.dark : AtelierColors.light;
+    return brightness == Brightness.dark
+        ? AtelierColors.dark
+        : AtelierColors.light;
   }
 
   static ThemeData _build(AtelierPalette p, Brightness brightness) {

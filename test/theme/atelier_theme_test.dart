@@ -18,7 +18,9 @@ void main() {
       expect(t.scaffoldBackgroundColor, AtelierColors.dark.bg);
     });
 
-    testWidgets('paletteOf returns light palette in light theme', (tester) async {
+    testWidgets('paletteOf returns light palette in light theme', (
+      tester,
+    ) async {
       AtelierPalette? captured;
       await tester.pumpWidget(
         MaterialApp(

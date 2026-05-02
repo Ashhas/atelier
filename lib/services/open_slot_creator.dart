@@ -21,7 +21,12 @@ class OpenSlotCreator {
     if (existing.isNotEmpty) return addPocket(name: name);
 
     final pocket = GoalCategory(id: newId(), name: name, order: 0);
-    final open = GoalCategory(id: newId(), name: _openName, order: 1, isAddSlot: true);
+    final open = GoalCategory(
+      id: newId(),
+      name: _openName,
+      order: 1,
+      isAddSlot: true,
+    );
     await _categories.add(pocket);
     await _categories.add(open);
     return pocket;

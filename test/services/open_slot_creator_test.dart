@@ -43,18 +43,24 @@ void main() {
     expect(rows.firstWhere((r) => r.isAddSlot).order, 2);
   });
 
-  test('removePocket of the last real pocket also removes the Open slot', () async {
-    final work = await creator.addFirstPocket(name: 'Work');
-    await creator.removePocket(work.id);
-    expect(await repo.all(), isEmpty);
-  });
+  test(
+    'removePocket of the last real pocket also removes the Open slot',
+    () async {
+      final work = await creator.addFirstPocket(name: 'Work');
+      await creator.removePocket(work.id);
+      expect(await repo.all(), isEmpty);
+    },
+  );
 
-  test('removePocket when other real pockets remain keeps the Open slot', () async {
-    final work = await creator.addFirstPocket(name: 'Work');
-    await creator.addPocket(name: 'Body');
-    await creator.removePocket(work.id);
+  test(
+    'removePocket when other real pockets remain keeps the Open slot',
+    () async {
+      final work = await creator.addFirstPocket(name: 'Work');
+      await creator.addPocket(name: 'Body');
+      await creator.removePocket(work.id);
 
-    final rows = await repo.all();
-    expect(rows.map((r) => r.name).toList(), ['Body', 'Open']);
-  });
+      final rows = await repo.all();
+      expect(rows.map((r) => r.name).toList(), ['Body', 'Open']);
+    },
+  );
 }

@@ -146,5 +146,69 @@ void main() {
 
       expect(find.text('Body'), findsWidgets);
     });
+
+    testWidgets('renders one YearBanner per year goal', (tester) async {
+      const ygOne = YearGoal(
+        id: 'yg1',
+        goalCategoryId: 'cat1',
+        title: 'Run a marathon',
+      );
+      const ygTwo = YearGoal(
+        id: 'yg2',
+        goalCategoryId: 'cat1',
+        title: 'Lift 100kg',
+      );
+      const ygThree = YearGoal(
+        id: 'yg3',
+        goalCategoryId: 'cat1',
+        title: 'Swim 1km',
+      );
+
+      when(() => categoriesCubit.state).thenReturn(
+        const GoalCategoriesState(categories: [testCategory], loaded: true),
+      );
+      when(() => goalsCubit.state).thenReturn(const GoalsState(loaded: true));
+      when(() => yearGoalsCubit.state).thenReturn(
+        const YearGoalsState(loaded: true, yearGoals: [ygOne, ygTwo, ygThree]),
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          goals: goalsCubit,
+          yearGoals: yearGoalsCubit,
+          categories: categoriesCubit,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(YearBanner), findsNWidgets(3));
+      expect(find.text('Run a marathon'), findsOneWidget);
+      expect(find.text('Lift 100kg'), findsOneWidget);
+      expect(find.text('Swim 1km'), findsOneWidget);
+    });
+
+    testWidgets('shows empty-state YearBanner when there are zero year goals', (
+      tester,
+    ) async {
+      when(() => categoriesCubit.state).thenReturn(
+        const GoalCategoriesState(categories: [testCategory], loaded: true),
+      );
+      when(() => goalsCubit.state).thenReturn(const GoalsState(loaded: true));
+      when(
+        () => yearGoalsCubit.state,
+      ).thenReturn(const YearGoalsState(loaded: true));
+
+      await tester.pumpWidget(
+        _wrap(
+          goals: goalsCubit,
+          yearGoals: yearGoalsCubit,
+          categories: categoriesCubit,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Exactly one YearBanner is rendered (the empty-state variant).
+      expect(find.byType(YearBanner), findsOneWidget);
+    });
   });
 }

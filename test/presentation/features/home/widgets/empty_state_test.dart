@@ -55,5 +55,29 @@ void main() {
       await tester.pump();
       verify(() => cubit.addPocket('Work')).called(1);
     });
+
+    testWidgets('shows visible ADD pill button after tapping action', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit));
+      await tester.tap(find.byType(HomeEmptyStateAction));
+      await tester.pump();
+      // The ADD button is rendered next to the TextField in editing mode.
+      expect(find.text('ADD'), findsOneWidget);
+    });
+
+    testWidgets(
+      'tapping the visible ADD button submits text via cubit.addPocket',
+      (tester) async {
+        when(() => cubit.addPocket(any())).thenAnswer((_) async {});
+        await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit));
+        await tester.tap(find.byType(HomeEmptyStateAction));
+        await tester.pump();
+        await tester.enterText(find.byType(TextField), 'Body');
+        await tester.tap(find.text('ADD'));
+        await tester.pump();
+        verify(() => cubit.addPocket('Body')).called(1);
+      },
+    );
   });
 }

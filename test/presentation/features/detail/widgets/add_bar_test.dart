@@ -130,5 +130,38 @@ void main() {
         ).called(1);
       },
     );
+
+    testWidgets('shows visible ADD button while composing', (tester) async {
+      await tester.pumpWidget(
+        _wrap(goals: goalsCubit, yearGoals: yearGoalsCubit),
+      );
+      await tester.tap(find.byType(AddBarPlaceholder));
+      await tester.pumpAndSettle();
+      expect(find.text('ADD'), findsOneWidget);
+    });
+
+    testWidgets('tapping the visible ADD button submits via GoalsCubit.add', (
+      tester,
+    ) async {
+      when(
+        () => goalsCubit.add(
+          goalCategoryId: any(named: 'goalCategoryId'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        _wrap(goals: goalsCubit, yearGoals: yearGoalsCubit),
+      );
+      await tester.tap(find.byType(AddBarPlaceholder));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Long run Sat');
+      await tester.tap(find.text('ADD'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => goalsCubit.add(goalCategoryId: 'cat1', title: 'Long run Sat'),
+      ).called(1);
+    });
   });
 }

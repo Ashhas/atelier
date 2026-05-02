@@ -24,7 +24,8 @@ void main() {
 
   tearDown(() async => db.close());
 
-  Goal _g(String id, String catId, {bool starred = false, DateTime? addedAt}) => Goal(
+  Goal _g(String id, String catId, {bool starred = false, DateTime? addedAt}) =>
+      Goal(
         id: id,
         goalCategoryId: catId,
         title: 'Title $id',
@@ -41,9 +42,13 @@ void main() {
 
   test('byCategory sorts starred-first, then by addedAt ascending', () async {
     await repo.add(_g('1', 'cat-a', addedAt: DateTime.utc(2026, 5, 1)));
-    await repo.add(_g('2', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 3)));
+    await repo.add(
+      _g('2', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 3)),
+    );
     await repo.add(_g('3', 'cat-a', addedAt: DateTime.utc(2026, 5, 2)));
-    await repo.add(_g('4', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 1)));
+    await repo.add(
+      _g('4', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 1)),
+    );
 
     final ordered = await repo.byCategory('cat-a');
     expect(ordered.map((g) => g.id).toList(), ['4', '2', '1', '3']);
@@ -51,10 +56,9 @@ void main() {
 
   test('update changes title + starred', () async {
     await repo.add(_g('1', 'cat-a'));
-    final updated = (await repo.byCategory('cat-a')).single.copyWith(
-          title: 'Renamed',
-          starred: true,
-        );
+    final updated = (await repo.byCategory(
+      'cat-a',
+    )).single.copyWith(title: 'Renamed', starred: true);
     await repo.update(updated);
     expect((await repo.byCategory('cat-a')).single.title, 'Renamed');
     expect((await repo.byCategory('cat-a')).single.starred, isTrue);

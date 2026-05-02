@@ -113,9 +113,10 @@ Future<void> _writeIcon({
   )..layout();
 
   final dx = (canvasSize - tp.width) / 2;
-  // Italic 'a' has no ascender; nudge down slightly so the body of the glyph
-  // sits visually centered.
-  final dy = (canvasSize - tp.height) / 2 + tp.height * 0.04;
+  // The italic 'a' bounding box includes ~12% of empty space below the
+  // baseline (the descender slot). Nudge up by that fraction so the visible
+  // ink sits at canvas center, not the glyph metric box.
+  final dy = (canvasSize - tp.height) / 2 - tp.height * 0.06;
   tp.paint(canvas, Offset(dx, dy));
 
   await _writePng(recorder.endRecording(), canvasSize, canvasSize, outFile);

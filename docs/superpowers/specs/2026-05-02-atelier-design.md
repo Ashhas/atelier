@@ -81,8 +81,8 @@ Composition (built from the existing design vocabulary — dashed hairline borde
 
 - A large dashed-border container occupying the region where the grid normally sits: `1px dashed C.rule`, `borderRadius: 14`, full width with the same 22px horizontal padding as the grid, vertical padding ~28px.
 - Vertically and horizontally centered content stack (gap 14px):
-  - **Eyebrow** — `MonoLabel` (existing widget) reading `BLANK SLATE` at 9px, letter-spacing 1.8, `C.mute`.
-  - **Italic display title** — `SerifTitle` (existing widget) reading `Your year, one pocket at a time.` at ~26px italic, `letterSpacing -0.4`, `lineHeight 1.2`, `C.ink`. Max-width constrained so it wraps to two lines.
+  - **Eyebrow** — plain `Text('BLANK SLATE', style: AtelierTypography.monoEyebrow.copyWith(color: C.mute))`. Tokens live in `theme/atelier_typography.dart`; per-call-site variation (color, occasional size) uses `.copyWith()`.
+  - **Italic display title** — plain `Text('Your year, one pocket at a time.', style: AtelierTypography.serifDisplay.copyWith(fontSize: 26, height: 1.2, color: C.ink))`. Max-width constrained so it wraps to two lines.
   - **Sans body** — Inter 13px, `C.sub`, `lineHeight 1.4`, max-width ~240px, centered: `Pockets are categories for your goals — Work, Body, Mind, anything you want. Tap below to start your first one.`
   - **Primary action** — pill button matching the existing `C.ink` "Done" pill in manage mode, scaled slightly: `+ ADD YOUR FIRST POCKET` in JetBrains Mono caps 10px / letter-spacing 1.4 / weight 600, `padding 12px 18px`, `borderRadius 999`, `background: C.ink`, `color: C.bg`.
 - Tapping the action button enters the same add-pocket flow as tapping `Open` (small input → submit → create `GoalCategory`). On the first successful add: also create the `Open` add-slot row, then home transitions to the normal grid view.
@@ -100,7 +100,7 @@ Composition (built from the existing design vocabulary — dashed hairline borde
 ┌─ UI Layer (Flutter widgets) ─────────────────────┐
 │  HomeScreen, DetailScreen, SettingsSheet         │
 │  Pocket, GoalRow, YearBanner, TickStrip,         │
-│  AddBar, Segmented, MonoLabel, SerifTitle        │
+│  AddBar, Segmented (plus stock Text + theme styles)│
 └──────────────────┬───────────────────────────────┘
                    │ context.read / BlocBuilder / BlocSelector
 ┌──────────────────▼───────────────────────────────┐
@@ -232,7 +232,7 @@ The full widget breakdown lives in the project layout (Section 11). Roles in bri
 - **Detail add bar** — `AddBar` composes `AddBarSwitch` (uses `Segmented`) plus either `AddBarInput` or `AddBarPlaceholder`.
 - **Detail top bar** — `DetailTopBar` composes `DetailBackButton` + serif title + `DetailCountLabel`.
 - **Settings sheet** — `SettingsSheet` composes `SettingsBackdrop`, `SettingsHandle`, `SettingsHeader`, `ThemeSelector`, `FontScaleSelector`, and `ResetDataButton`. The button swaps to `ResetDataConfirm` after first tap.
-- **Common atoms** — `Segmented` + `SegmentedOption` (the generic pill switch); `MonoLabel` (JetBrains Mono small-caps); `SerifTitle` (Fraunces italic); `PhoneSafeArea` (handles the device status-bar inset).
+- **Common atoms** — `Segmented` + `SegmentedOption` (the generic pill switch). No custom text widgets: every label / title / body uses `Text(...)` with a named `TextStyle` constant from `theme/atelier_typography.dart`, with `.copyWith()` for the rare per-site variation (color, size). The status-bar inset is handled by Flutter's stock `SafeArea`.
 
 ## 8. Interactions / data flow
 
@@ -403,9 +403,6 @@ atelier/
         segmented/
           segmented.dart
           segmented_option.dart
-        text/
-          mono_label.dart                    # widget that renders TextStyle tokens from theme/atelier_typography.dart
-          serif_title.dart
 
     utils/
       date_utils.dart                        # daysInMonth, daysSince helpers
@@ -467,7 +464,7 @@ config ──▶ data ──▶ domain ◀── services ◀── presentation
 - Future Supabase port: write `data/supabase/supabase_*_repository.dart`, change one line in `config/atelier_app.dart` to inject the new impl. `domain/` and `presentation/` don't change.
 - `data/drift/` holds *only* the DB schema (database root + tables). Drift-backed repository impls live under `data/repositories/` next to the prefs impl, because they're peers — both implement contracts from `domain/repositories/`. This keeps "what the database is" separate from "how a repository talks to it" while still letting Drift impls live in the same top-level `data/` umbrella.
 - `services/` is reserved for *orchestrators* — code that composes calls across multiple repositories. Today that's just `open_slot_creator.dart`. Tomorrow it might be `notification_service.dart`, `sync_service.dart`, etc. They explicitly are not repositories.
-- `theme/` holds the type *tokens* (`TextStyle` constants in `atelier_typography.dart`); `presentation/common/text/` holds the *widgets* (`MonoLabel`, `SerifTitle`) that consume those tokens. The folder is named `text/`, not `typography/`, to keep that distinction crisp.
+- `theme/atelier_typography.dart` is the single source of truth for type. It exports named `TextStyle` constants (e.g. `AtelierTypography.monoEyebrow`, `serifDisplay`, `serifTitle`, `serifBody`, `sansBody`) covering every recurring recipe in the prototype. Call sites use `Text('...', style: AtelierTypography.X.copyWith(color: C.mute))` directly — no wrapper widgets. This keeps tokens discoverable via autocomplete and avoids a wrapper layer that would only forward `Text` props.
 
 **Presentation conventions:**
 
@@ -484,7 +481,7 @@ config ──▶ data ──▶ domain ◀── services ◀── presentation
 
 ## 12. Build sequence (rough)
 
-1. Theme + typography + base widgets (Segmented, MonoLabel, SerifTitle)
+1. Theme + typography tokens + base widgets (`Segmented` / `SegmentedOption` only — typography is plain `TextStyle` constants, no custom text widgets)
 2. Domain layer: `domain/models/` (plain data classes) + `domain/repositories/` (abstract contracts)
 3. Data layer: `data/drift/` (schema — database root + tables) + `data/repositories/` (Drift impls + prefs impl); no seeding (first launch is empty)
 4. SharedPreferences settings repo

@@ -6,7 +6,7 @@
 
 **Architecture:** Three-layer clean-architecture-lite. `domain/` owns models + repository contracts (pure Dart), `data/` owns Drift schema + repository implementations, `presentation/` owns cubits/screens/widgets. `services/` holds orchestrators that compose multiple repositories. `config/` is the composition root that constructs concrete impls and wires them via `MultiBlocProvider`. Each cubit lives in the feature that primarily owns it; shared cubits are made cross-feature available by being provided at the app shell.
 
-**Tech Stack:** Flutter 3.32, Dart 3.8, `drift ^2.32` + `drift_dev` + `sqlite3_flutter_libs` (SQLite-backed local DB with codegen), `shared_preferences ^2` (settings), `flutter_bloc ^9.1` + `equatable` (state), `go_router ^17` (routing), `google_fonts` (Fraunces / Inter / JetBrains Mono), `reorderable_grid_view` (drag-reorder), `uuid` (ids), `bloc_test` + `mocktail` (testing).
+**Tech Stack:** Flutter 3.32, Dart 3.8, `drift ^2.31` + `drift_dev ^2.31` + `sqlite3_flutter_libs ^0.5.42` (SQLite-backed local DB with codegen), `shared_preferences ^2` (settings), `flutter_bloc ^9.1` + `equatable` (state), `go_router ^16.3` (routing), `google_fonts` (Fraunces / Inter / JetBrains Mono), `reorderable_grid_view` (drag-reorder), `uuid` (ids), `mocktail` + manual `cubit.stream.listen` for cubit tests (bloc_test cannot be used: its transitive `test` package constraints conflict with `drift_dev` on Dart 3.8).
 
 **Spec:** `docs/superpowers/specs/2026-05-02-atelier-design.md`. The spec is the source of truth for product behaviour, theming tokens, palettes, and acceptance details. This plan tells you *how* to build it; the spec tells you *what*. Re-read the spec at the start of each phase.
 
@@ -88,11 +88,11 @@ dependencies:
   equatable: ^2.0.5
 
   # Routing
-  go_router: ^17.2.3
+  go_router: ^16.3.0
 
   # Persistence
-  drift: ^2.32.1
-  sqlite3_flutter_libs: ^0.5.24
+  drift: ^2.31.0
+  sqlite3_flutter_libs: ^0.5.42
   path_provider: ^2.1.4
   path: ^1.9.0
   shared_preferences: ^2.3.2
@@ -106,11 +106,23 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  bloc_test: ^10.0.0
   mocktail: ^1.0.4
-  drift_dev: ^2.32.1
+  drift_dev: ^2.31.0
   build_runner: ^2.4.13
 ```
+
+> **Note on `bloc_test`:** The original plan specified `bloc_test`, but on Dart 3.8 it transitively pulls in a version of `test` whose `analyzer` constraint (`<8.0.0`) conflicts with `drift_dev`'s `analyzer ^8.1`. Cubit tests in this plan instead use the standard `cubit.stream.listen(...)` approach to capture emitted states. The pattern is:
+>
+> ```dart
+> final cubit = MyCubit(...);
+> final emitted = <MyState>[];
+> final sub = cubit.stream.listen(emitted.add);
+> await cubit.someMethod();
+> await sub.cancel();
+> expect(emitted, [...]);
+> ```
+>
+> Wherever a later task in this plan shows `blocTest<...>` calls, translate them to this pattern. The same assertions still apply.
 
 - [ ] **Step 2: Install**
 

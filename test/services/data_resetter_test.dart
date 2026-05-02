@@ -5,7 +5,6 @@ import 'package:atelier/data/repositories/drift_year_goal_repository.dart';
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/app_settings.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
-import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/services/data_resetter.dart';
 import 'package:atelier/services/open_slot_creator.dart';
 import 'package:drift/native.dart';

@@ -14,7 +14,10 @@ class GoalsCubit extends Cubit<GoalsState> {
     emit(GoalsState(goals: all, loaded: true));
   }
 
-  Future<void> add({required String goalCategoryId, required String title}) async {
+  Future<void> add({
+    required String goalCategoryId,
+    required String title,
+  }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty) return;
     await _repo.add(

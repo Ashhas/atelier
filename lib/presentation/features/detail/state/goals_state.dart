@@ -8,13 +8,12 @@ class GoalsState extends Equatable {
   final bool loaded;
 
   /// Goals for a specific category, starred-first then insertion order.
-  List<Goal> forCategory(String goalCategoryId) =>
-      goals.where((g) => g.goalCategoryId == goalCategoryId).toList(growable: false);
+  List<Goal> forCategory(String goalCategoryId) => goals
+      .where((g) => g.goalCategoryId == goalCategoryId)
+      .toList(growable: false);
 
-  GoalsState copyWith({List<Goal>? goals, bool? loaded}) => GoalsState(
-    goals: goals ?? this.goals,
-    loaded: loaded ?? this.loaded,
-  );
+  GoalsState copyWith({List<Goal>? goals, bool? loaded}) =>
+      GoalsState(goals: goals ?? this.goals, loaded: loaded ?? this.loaded);
 
   @override
   List<Object?> get props => [goals, loaded];

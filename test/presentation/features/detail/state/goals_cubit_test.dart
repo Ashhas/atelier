@@ -28,7 +28,9 @@ void main() {
     await cubit.add(goalCategoryId: 'cat-a', title: 'Strength 3×/wk');
     await Future<void>.delayed(Duration.zero);
     await sub.cancel();
-    expect(emitted.last.forCategory('cat-a').map((g) => g.title).toList(), ['Strength 3×/wk']);
+    expect(emitted.last.forCategory('cat-a').map((g) => g.title).toList(), [
+      'Strength 3×/wk',
+    ]);
   });
 
   test('toggleStar promotes the goal in sort order', () async {
@@ -37,9 +39,14 @@ void main() {
     await cubit.add(goalCategoryId: 'cat-a', title: 'A');
     await cubit.add(goalCategoryId: 'cat-a', title: 'B');
     await cubit.add(goalCategoryId: 'cat-a', title: 'C');
-    final b = cubit.state.forCategory('cat-a').firstWhere((g) => g.title == 'B');
+    final b = cubit.state
+        .forCategory('cat-a')
+        .firstWhere((g) => g.title == 'B');
     await cubit.toggleStar(b.id);
-    final titles = cubit.state.forCategory('cat-a').map((g) => g.title).toList();
+    final titles = cubit.state
+        .forCategory('cat-a')
+        .map((g) => g.title)
+        .toList();
     expect(titles.first, 'B');
   });
 

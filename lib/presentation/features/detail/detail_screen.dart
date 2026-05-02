@@ -49,7 +49,7 @@ class DetailScreen extends StatelessWidget {
               name: categoryName,
               monthCount: goals.length,
               yearCount: yearGoals.length,
-              onBack: () => context.pop(),
+              onBack: () => context.canPop() ? context.pop() : context.go('/'),
             ),
             Expanded(
               child: ListView(

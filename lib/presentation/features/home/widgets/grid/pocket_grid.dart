@@ -117,7 +117,7 @@ class PocketGrid extends StatelessWidget {
                       if (category.isAddSlot) {
                         _showAddPocketSheet(context, categoriesCubit);
                       } else {
-                        context.go('/pocket/${category.id}');
+                        context.push('/pocket/${category.id}');
                       }
                     },
                     onRemove: () => categoriesCubit.removePocket(category.id),

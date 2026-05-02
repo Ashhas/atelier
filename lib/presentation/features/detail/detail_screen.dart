@@ -9,6 +9,7 @@ import 'package:atelier/presentation/features/detail/widgets/year_banner/year_ba
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -26,14 +27,10 @@ class DetailScreen extends StatelessWidget {
     final goalsState = context.watch<GoalsCubit>().state;
     final yearGoalsState = context.watch<YearGoalsCubit>().state;
 
-    final category = categoriesState.categories
-        .where((c) => c.id == goalCategoryId)
-        .cast<dynamic>()
-        .firstOrNull;
-
-    final categoryName = (category != null)
-        ? (category.name as String)
-        : goalCategoryId;
+    final category = categoriesState.categories.firstWhereOrNull(
+      (c) => c.id == goalCategoryId,
+    );
+    final categoryName = category?.name ?? goalCategoryId;
 
     final goals = goalsState.forCategory(goalCategoryId);
     final yearGoals = yearGoalsState.forCategory(goalCategoryId);

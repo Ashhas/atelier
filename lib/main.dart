@@ -10,9 +10,7 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: Scaffold(
-        body: Center(child: Text('Atelier — bootstrapping')),
-      ),
+      home: Scaffold(body: Center(child: Text('Atelier — bootstrapping'))),
     );
   }
 }

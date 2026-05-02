@@ -13,13 +13,17 @@ class YearGoal extends Equatable {
   final String title;
   final bool expanded;
 
-  YearGoal copyWith({String? id, String? goalCategoryId, String? title, bool? expanded}) =>
-      YearGoal(
-        id: id ?? this.id,
-        goalCategoryId: goalCategoryId ?? this.goalCategoryId,
-        title: title ?? this.title,
-        expanded: expanded ?? this.expanded,
-      );
+  YearGoal copyWith({
+    String? id,
+    String? goalCategoryId,
+    String? title,
+    bool? expanded,
+  }) => YearGoal(
+    id: id ?? this.id,
+    goalCategoryId: goalCategoryId ?? this.goalCategoryId,
+    title: title ?? this.title,
+    expanded: expanded ?? this.expanded,
+  );
 
   @override
   List<Object?> get props => [id, goalCategoryId, title, expanded];

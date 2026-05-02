@@ -4,7 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('YearGoal', () {
     test('defaults to expanded=true', () {
-      const yg = YearGoal(id: 'y1', goalCategoryId: 'c1', title: 'Run sub-22 5K');
+      const yg = YearGoal(
+        id: 'y1',
+        goalCategoryId: 'c1',
+        title: 'Run sub-22 5K',
+      );
       expect(yg.expanded, isTrue);
     });
 

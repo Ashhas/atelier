@@ -85,6 +85,13 @@ void main() {
   testWidgets('PocketGrid renders one Pocket per visible category §3.2', (
     tester,
   ) async {
+    // Tall viewport so all 3 pockets fit on screen with the current
+    // childAspectRatio. Offscreen tiles are kept alive by the grid but
+    // findByType only finds rendered subtrees.
+    tester.view.physicalSize = const Size(400, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+
     await tester.pumpWidget(
       _wrap(
         const PocketGrid(),

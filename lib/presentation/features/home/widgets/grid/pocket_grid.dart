@@ -93,7 +93,12 @@ class PocketGrid extends StatelessWidget {
         20,
       ),
       shrinkWrap: true,
-      childAspectRatio: 0.88,
+      // Tile height grows with content. The minimum case (0 year goals,
+      // 0 month goals, just header + empty state) needs ~200px; the worst
+      // common case (2 year goals + 3 month goals) needs ~280px. Sized for
+      // the worst case so all pockets get the same — until we move to a
+      // masonry layout that can vary per tile.
+      childAspectRatio: 0.55,
       dragEnabled: isManaging,
       onReorder: (int oldIndex, int newIndex) {
         final reordered = List<GoalCategory>.from(visibleCategories);

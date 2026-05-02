@@ -4,10 +4,6 @@ A local-first personal goals app — at-a-glance pockets for the things you're w
 
 A Flutter port of the "Atelier — Pockets" design prototype.
 
-## Status
-
-v1 — local-first, single user, Android + iOS. Persistence is on-device SQLite via Drift; no backend, no sign-in, no cloud sync.
-
 ## Features
 
 - **Pockets for what matters.** Group your goals into pockets — Work, Body, Mind, Side projects, whatever. Each pocket holds your big goals for the year and your focus for the month, side by side.

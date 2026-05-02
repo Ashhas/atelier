@@ -20,13 +20,28 @@ void main() {
     });
 
     test('value equality across all fields', () {
-      final a = Goal(id: 'g', goalCategoryId: 'c', title: 't', addedAt: addedAt);
-      final b = Goal(id: 'g', goalCategoryId: 'c', title: 't', addedAt: addedAt);
+      final a = Goal(
+        id: 'g',
+        goalCategoryId: 'c',
+        title: 't',
+        addedAt: addedAt,
+      );
+      final b = Goal(
+        id: 'g',
+        goalCategoryId: 'c',
+        title: 't',
+        addedAt: addedAt,
+      );
       expect(a, equals(b));
     });
 
     test('copyWith for starred + title', () {
-      final g = Goal(id: 'g', goalCategoryId: 'c', title: 't', addedAt: addedAt);
+      final g = Goal(
+        id: 'g',
+        goalCategoryId: 'c',
+        title: 't',
+        addedAt: addedAt,
+      );
       expect(g.copyWith(starred: true).starred, isTrue);
       expect(g.copyWith(title: 'new').title, 'new');
     });

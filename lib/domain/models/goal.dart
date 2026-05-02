@@ -21,14 +21,13 @@ class Goal extends Equatable {
     String? title,
     bool? starred,
     DateTime? addedAt,
-  }) =>
-      Goal(
-        id: id ?? this.id,
-        goalCategoryId: goalCategoryId ?? this.goalCategoryId,
-        title: title ?? this.title,
-        starred: starred ?? this.starred,
-        addedAt: addedAt ?? this.addedAt,
-      );
+  }) => Goal(
+    id: id ?? this.id,
+    goalCategoryId: goalCategoryId ?? this.goalCategoryId,
+    title: title ?? this.title,
+    starred: starred ?? this.starred,
+    addedAt: addedAt ?? this.addedAt,
+  );
 
   @override
   List<Object?> get props => [id, goalCategoryId, title, starred, addedAt];

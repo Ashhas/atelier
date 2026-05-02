@@ -254,6 +254,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_staggered_grid_view:
+    dependency: "direct main"
+    description:
+      name: flutter_staggered_grid_view
+      sha256: "19e7abb550c96fbfeb546b23f3ff356ee7c59a019a651f8f102a4ba9b7349395"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -544,14 +552,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  reorderable_grid_view:
-    dependency: "direct main"
-    description:
-      name: reorderable_grid_view
-      sha256: e36c6229a97105a10c79e15ab4b9b14ee9f6c488574ff2be9e858c82af47cda6
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.8"
   shared_preferences:
     dependency: "direct main"
     description:

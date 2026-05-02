@@ -1,4 +1,3 @@
-import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
@@ -7,8 +6,8 @@ import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 void _showAddPocketSheet(BuildContext context, GoalCategoriesCubit cubit) {
   final controller = TextEditingController();
@@ -56,10 +55,12 @@ void _showAddPocketSheet(BuildContext context, GoalCategoriesCubit cubit) {
   );
 }
 
-/// 2-column reorderable grid of pocket cards, driven by [GoalCategoriesCubit].
+/// 2-column masonry grid of pocket cards, driven by [GoalCategoriesCubit].
 ///
-/// The Open add-slot pocket is hidden during manage mode (spec §3.6).
-/// Drag-reorder triggers [GoalCategoriesCubit.reorder] with the new real-id order.
+/// Tile height adapts to the content of each pocket (variable per tile),
+/// so a sparse pocket and a full pocket can sit side-by-side without
+/// wasted space or overflow. The Open add-slot pocket is hidden during
+/// manage mode (spec §3.6).
 ///
 /// Prototype: 2-column grid, gap 8, padding 4 22 20.
 class PocketGrid extends StatelessWidget {
@@ -74,7 +75,7 @@ class PocketGrid extends StatelessWidget {
 
     final isManaging = manageState.isManaging;
 
-    // In manage mode the Open add-slot is hidden (spec §3.6)
+    // In manage mode the Open add-slot is hidden (spec §3.6).
     final visibleCategories = isManaging
         ? catState.categories.where((c) => !c.isAddSlot).toList()
         : catState.categories;
@@ -82,7 +83,7 @@ class PocketGrid extends StatelessWidget {
     final categoriesCubit = context.read<GoalCategoriesCubit>();
     final manageCubit = context.read<ManageModeCubit>();
 
-    return ReorderableGridView.count(
+    return MasonryGridView.count(
       crossAxisCount: 2,
       mainAxisSpacing: AtelierSpacing.base, // 8
       crossAxisSpacing: AtelierSpacing.base, // 8
@@ -93,54 +94,35 @@ class PocketGrid extends StatelessWidget {
         20,
       ),
       shrinkWrap: true,
-      // Tile height grows with content. The minimum case (0 year goals,
-      // 0 month goals, just header + empty state) needs ~200px; the worst
-      // common case (2 year goals + 3 month goals) needs ~280px. Sized for
-      // the worst case so all pockets get the same — until we move to a
-      // masonry layout that can vary per tile.
-      childAspectRatio: 0.55,
-      dragEnabled: isManaging,
-      onReorder: (int oldIndex, int newIndex) {
-        final reordered = List<GoalCategory>.from(visibleCategories);
-        final moved = reordered.removeAt(oldIndex);
-        reordered.insert(newIndex, moved);
-        // Only pass the real (non-add-slot) ids in new order
-        final realIds = reordered
-            .where((c) => !c.isAddSlot)
-            .map((c) => c.id)
-            .toList();
-        categoriesCubit.reorder(realIds);
+      itemCount: visibleCategories.length,
+      itemBuilder: (context, index) {
+        final category = visibleCategories[index];
+        final pocketYearGoals = yearGoalsState.forCategory(category.id);
+        final expanded = pocketYearGoals
+            .where((y) => y.expanded)
+            .toList(growable: false);
+        final collapsed = pocketYearGoals.length - expanded.length;
+        return Pocket(
+          key: ValueKey(category.id),
+          category: category,
+          yearGoalCount: pocketYearGoals.length,
+          goalsPreview: goalsState.forCategory(category.id),
+          expandedYearGoals: expanded,
+          collapsedYearCount: collapsed,
+          isManaging: isManaging && !category.isAddSlot,
+          onTap: () {
+            if (category.isAddSlot) {
+              _showAddPocketSheet(context, categoriesCubit);
+            } else {
+              context.push('/pocket/${category.id}');
+            }
+          },
+          onRemove: () => categoriesCubit.removePocket(category.id),
+          onLongPress: () {
+            if (!category.isAddSlot) manageCubit.enter();
+          },
+        );
       },
-      children: [
-        for (final category in visibleCategories)
-          () {
-            final pocketYearGoals = yearGoalsState.forCategory(category.id);
-            final expanded = pocketYearGoals
-                .where((y) => y.expanded)
-                .toList(growable: false);
-            final collapsed = pocketYearGoals.length - expanded.length;
-            return Pocket(
-              key: ValueKey(category.id),
-              category: category,
-              yearGoalCount: pocketYearGoals.length,
-              goalsPreview: goalsState.forCategory(category.id),
-              expandedYearGoals: expanded,
-              collapsedYearCount: collapsed,
-              isManaging: isManaging && !category.isAddSlot,
-              onTap: () {
-                if (category.isAddSlot) {
-                  _showAddPocketSheet(context, categoriesCubit);
-                } else {
-                  context.push('/pocket/${category.id}');
-                }
-              },
-              onRemove: () => categoriesCubit.removePocket(category.id),
-              onLongPress: () {
-                if (!category.isAddSlot) manageCubit.enter();
-              },
-            );
-          }(),
-      ],
     );
   }
 }

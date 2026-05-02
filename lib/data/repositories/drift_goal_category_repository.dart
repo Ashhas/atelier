@@ -24,13 +24,16 @@ class DriftGoalCategoryRepository implements GoalCategoryRepository {
 
   @override
   Future<void> update(GoalCategory category) async {
-    await (_db.update(_db.goalCategoriesTable)..where((t) => t.id.equals(category.id)))
-        .write(_toCompanion(category));
+    await (_db.update(
+      _db.goalCategoriesTable,
+    )..where((t) => t.id.equals(category.id))).write(_toCompanion(category));
   }
 
   @override
   Future<void> delete(String id) async {
-    await (_db.delete(_db.goalCategoriesTable)..where((t) => t.id.equals(id))).go();
+    await (_db.delete(
+      _db.goalCategoriesTable,
+    )..where((t) => t.id.equals(id))).go();
   }
 
   @override
@@ -50,13 +53,14 @@ class DriftGoalCategoryRepository implements GoalCategoryRepository {
   }
 
   GoalCategory _fromRow(GoalCategoryRow r) => GoalCategory(
-        id: r.id,
-        name: r.name,
-        order: r.sortOrder,
-        isAddSlot: r.isAddSlot,
-      );
+    id: r.id,
+    name: r.name,
+    order: r.sortOrder,
+    isAddSlot: r.isAddSlot,
+  );
 
-  GoalCategoriesTableCompanion _toCompanion(GoalCategory c) => GoalCategoriesTableCompanion(
+  GoalCategoriesTableCompanion _toCompanion(GoalCategory c) =>
+      GoalCategoriesTableCompanion(
         id: Value(c.id),
         name: Value(c.name),
         sortOrder: Value(c.order),

@@ -4,7 +4,8 @@ import 'package:atelier/domain/models/goal_category.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-AtelierDatabase _inMemory() => AtelierDatabase.withExecutor(NativeDatabase.memory());
+AtelierDatabase _inMemory() =>
+    AtelierDatabase.withExecutor(NativeDatabase.memory());
 
 void main() {
   late AtelierDatabase db;
@@ -65,7 +66,9 @@ void main() {
   });
 
   test('isAddSlot round-trips', () async {
-    await repo.add(const GoalCategory(id: 'open', name: 'Open', order: 99, isAddSlot: true));
+    await repo.add(
+      const GoalCategory(id: 'open', name: 'Open', order: 99, isAddSlot: true),
+    );
     expect((await repo.all()).single.isAddSlot, isTrue);
   });
 }

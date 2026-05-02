@@ -29,7 +29,9 @@ Widget _wrap(SettingsCubit cubit) => MaterialApp(
 
 void main() {
   group('FontScaleSelector §3.7', () {
-    testWidgets('renders FONT SIZE label and all three options', (tester) async {
+    testWidgets('renders FONT SIZE label and all three options', (
+      tester,
+    ) async {
       final cubit = await _makeCubit();
       await tester.pumpWidget(_wrap(cubit));
       await tester.pump();

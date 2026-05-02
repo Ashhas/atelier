@@ -20,9 +20,7 @@ void main() {
 
   group('SettingsBackdrop §3.7', () {
     testWidgets('renders without error in light theme', (tester) async {
-      await tester.pumpWidget(
-        _wrap(SettingsBackdrop(onDismiss: () {})),
-      );
+      await tester.pumpWidget(_wrap(SettingsBackdrop(onDismiss: () {})));
       expect(find.byType(SettingsBackdrop), findsOneWidget);
     });
 

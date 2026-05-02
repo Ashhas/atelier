@@ -18,7 +18,10 @@ class ThemeSelector extends StatelessWidget {
   const ThemeSelector({super.key});
 
   static final _options = [
-    const SegmentedOptionData<ThemeMode>(value: ThemeMode.light, label: 'LIGHT'),
+    const SegmentedOptionData<ThemeMode>(
+      value: ThemeMode.light,
+      label: 'LIGHT',
+    ),
     const SegmentedOptionData<ThemeMode>(value: ThemeMode.dark, label: 'DARK'),
   ];
 

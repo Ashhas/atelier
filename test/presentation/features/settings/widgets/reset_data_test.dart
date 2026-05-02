@@ -14,10 +14,7 @@ void main() {
     testWidgets('renders reset title and subtitle', (tester) async {
       await tester.pumpWidget(_wrap(ResetDataButton(onTap: () {})));
       expect(find.text('Reset all data'), findsOneWidget);
-      expect(
-        find.textContaining('Removes all goals'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Removes all goals'), findsOneWidget);
     });
 
     testWidgets('tapping fires onTap callback', (tester) async {
@@ -43,10 +40,7 @@ void main() {
       var cancelled = false;
       await tester.pumpWidget(
         _wrap(
-          ResetDataConfirm(
-            onReset: () {},
-            onCancel: () => cancelled = true,
-          ),
+          ResetDataConfirm(onReset: () {}, onCancel: () => cancelled = true),
         ),
       );
       await tester.tap(find.text('CANCEL'));
@@ -56,12 +50,7 @@ void main() {
     testWidgets('tapping RESET fires onReset callback', (tester) async {
       var reset = false;
       await tester.pumpWidget(
-        _wrap(
-          ResetDataConfirm(
-            onReset: () => reset = true,
-            onCancel: () {},
-          ),
-        ),
+        _wrap(ResetDataConfirm(onReset: () => reset = true, onCancel: () {})),
       );
       await tester.tap(find.text('RESET'));
       expect(reset, isTrue);

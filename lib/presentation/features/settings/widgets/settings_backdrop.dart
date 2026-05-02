@@ -12,9 +12,7 @@ class SettingsBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onDismiss,
-      child: Container(
-        color: Colors.black.withValues(alpha: 0.35),
-      ),
+      child: Container(color: Colors.black.withValues(alpha: 0.35)),
     );
   }
 }

@@ -24,8 +24,7 @@ class ResetDataConfirm extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final resetBg =
-        isDark ? const Color(0xFFc54545) : const Color(0xFFb91c1c);
+    final resetBg = isDark ? const Color(0xFFc54545) : const Color(0xFFb91c1c);
 
     return Container(
       padding: const EdgeInsets.all(AtelierSpacing.xl), // 14

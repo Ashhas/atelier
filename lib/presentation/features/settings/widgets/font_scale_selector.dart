@@ -19,12 +19,18 @@ class FontScaleSelector extends StatelessWidget {
   const FontScaleSelector({super.key});
 
   static final _options = [
-    const SegmentedOptionData<FontScale>(value: FontScale.small, label: 'SMALL'),
+    const SegmentedOptionData<FontScale>(
+      value: FontScale.small,
+      label: 'SMALL',
+    ),
     const SegmentedOptionData<FontScale>(
       value: FontScale.medium,
       label: 'MEDIUM',
     ),
-    const SegmentedOptionData<FontScale>(value: FontScale.large, label: 'LARGE'),
+    const SegmentedOptionData<FontScale>(
+      value: FontScale.large,
+      label: 'LARGE',
+    ),
   ];
 
   @override

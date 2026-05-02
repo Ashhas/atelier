@@ -287,23 +287,25 @@ atelier/
       enums/
         font_scale.dart
     services/
-      goal_category_repository.dart                 # abstract
-      goal_repository.dart                 # abstract
-      year_goal_repository.dart            # abstract
-      settings_repository.dart             # abstract
+      repositories/
+        interfaces/                          # abstract contracts; one file per repo
+          goal_category_repository.dart
+          goal_repository.dart
+          year_goal_repository.dart
+          settings_repository.dart
+        implementations/                     # concrete impls of the contracts above
+          drift_goal_category_repository.dart
+          drift_goal_repository.dart
+          drift_year_goal_repository.dart
+          prefs_settings_repository.dart
       drift/
-        atelier_database.dart              # @DriftDatabase root
+        atelier_database.dart                # @DriftDatabase root (schema only)
         tables/
           goal_categories_table.dart
           goals_table.dart
           year_goals_table.dart
-        drift_goal_category_repository.dart
-        drift_goal_repository.dart
-        drift_year_goal_repository.dart
-      prefs/
-        prefs_settings_repository.dart
       open_slot/
-        open_slot_creator.dart                # creates the Open add-slot row when the user's first pocket is added
+        open_slot_creator.dart               # orchestrator: creates the Open add-slot row when the user's first pocket is added
     utils/
       date_utils.dart                      # daysInMonth, daysSince helpers
       uuid.dart                            # uuid v4 wrapper
@@ -403,9 +405,10 @@ atelier/
         layout/
           phone_safe_area.dart             # top status-bar inset wrapper
   test/
-    services/                              # repository tests
-      drift/
-      prefs/
+    services/
+      repositories/
+        implementations/                   # repository impl tests (drift + prefs)
+      open_slot/                           # open_slot_creator tests
     ui/
       features/
         home/
@@ -424,8 +427,11 @@ atelier/
     superpowers/specs/                     # this file
 ```
 
-**Notes on layout choices (matching Plastic Avengers conventions):**
-- `lib/services/` instead of `lib/data/repositories/` — abstract repository interfaces sit at the top, drift / prefs implementations live in subfolders.
+**Notes on layout choices (matching Plastic Avengers conventions, with one refinement):**
+- `lib/services/` is the umbrella for all data + orchestration concerns. Inside it, `repositories/interfaces/` holds the abstract contracts and `repositories/implementations/` holds the concrete impls (drift + prefs). The split makes the repository pattern's "swap impl, keep interface" promise visually obvious — adding a future `SupabaseGoalRepository` means adding a single file under `implementations/` and switching which one is constructed in `main.dart`.
+- `services/drift/` holds *only* the database schema (the `@DriftDatabase` root and table definitions). The Drift-backed repository implementations live with the other implementations under `repositories/implementations/`. This keeps "what the database is" separate from "how a repository talks to it."
+- `services/open_slot/` is a sibling service that orchestrates the lazy creation of the `Open` add-slot row when the user adds their first pocket. It is not a repository; it composes calls into `GoalCategoryRepository`.
+- This is a small refinement of the Plastic-Avengers convention (where services like `photo_storage_service.dart` sit flat at the top of `lib/services/`). Atelier's service surface is nearly all repository-shaped, so the explicit `repositories/` split pays off; non-repository services (e.g. future `open_slot/`) still live flat alongside it.
 - `lib/ui/features/<feature>/` instead of `lib/features/<feature>/` — keeps presentation cleanly separate from data.
 - Each feature has a `<feature>_container.dart` (creates / provides cubits) + `<feature>_screen.dart` (pure UI). This mirrors `campaigns_container.dart` + `campaigns_screen.dart` in the reference project.
 - Cubits live in `state/` inside their owning feature when feature-scoped, or in `lib/ui/features/cubits/` when global (goal-categories / goals / year-goals are app-wide).
@@ -435,8 +441,8 @@ atelier/
 ## 12. Build sequence (rough)
 
 1. Theme + typography + base widgets (Segmented, MonoLabel, SerifTitle)
-2. Domain models + repository interfaces
-3. Drift setup (tables, codegen, database root) + Drift impls; no seeding (first launch is empty)
+2. Domain models + repository interfaces (under `services/repositories/interfaces/`)
+3. Drift setup — schema (`services/drift/`: database root + tables) + repository implementations (`services/repositories/implementations/drift_*_repository.dart`); no seeding (first launch is empty)
 4. SharedPreferences settings repo
 5. Cubits + states wired to repos, registered via `MultiBlocProvider` at app root
 6. HomeScreen scaffold + TickStrip + Pocket (read-only first)

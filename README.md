@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/lockup-dark-1600x480.png">
+    <img alt="Atelier — a personal goals atelier" src="assets/branding/lockup-light-1600x480.png" width="720">
+  </picture>
+</p>
+
 # Atelier
 
 A local-first personal goals app — at-a-glance pockets for the things you're working on this year and this month.

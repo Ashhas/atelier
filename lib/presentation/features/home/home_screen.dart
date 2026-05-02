@@ -43,7 +43,9 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   child: isEmpty
                       ? const SingleChildScrollView(child: HomeEmptyState())
-                      : const SingleChildScrollView(child: PocketGrid()),
+                      // PocketGrid (MasonryGridView) scrolls itself — wrapping
+                      // it in another scroll view would defeat lazy layout.
+                      : const PocketGrid(),
                 ),
               ],
             );
@@ -98,7 +100,8 @@ class HomeScreen extends StatelessWidget {
     await yearGoalsCubit.reload();
     // SettingsCubit.reset() clears prefs and re-emits defaults.
     await settingsCubit.reset();
-    // 3. Close the sheet.
+    // 3. Close the sheet — but only if the user hasn't already left.
+    if (!context.mounted) return;
     navigator.pop();
   }
 }

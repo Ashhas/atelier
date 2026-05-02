@@ -2,7 +2,7 @@
 
 A local-first personal goals app — at-a-glance pockets for the things you're working on this year and this month.
 
-A Flutter port of the Claude Design "Atelier — Pockets" prototype.
+A Flutter port of the "Atelier — Pockets" design prototype.
 
 ## Status
 
@@ -69,7 +69,7 @@ The `build.yml` GitHub Actions workflow builds a debug APK for Android and an un
 
 ## Design
 
-The original Claude Design handoff (palettes, typography, screen-by-screen breakdowns, prototype JSX) is preserved at `docs/design-handoff/`.
+The original design handoff (palettes, typography, screen-by-screen breakdowns, prototype JSX) is preserved at `docs/design-handoff/`.
 
 The architecture spec, including token tables and acceptance details, is at `docs/superpowers/specs/2026-05-02-atelier-design.md`.
 

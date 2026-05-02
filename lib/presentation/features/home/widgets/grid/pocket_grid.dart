@@ -1,8 +1,8 @@
 import 'package:atelier/domain/models/goal_category.dart';
+import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
+import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
-import 'package:atelier/presentation/features/home/state/goal_categories_state.dart';
 import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart';
-import 'package:atelier/presentation/features/home/state/manage_mode_state.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:flutter/material.dart';
@@ -67,69 +67,66 @@ class PocketGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GoalCategoriesCubit, GoalCategoriesState>(
-      builder: (context, catState) {
-        return BlocBuilder<ManageModeCubit, ManageModeState>(
-          builder: (context, manageState) {
-            final isManaging = manageState.isManaging;
+    final catState = context.watch<GoalCategoriesCubit>().state;
+    final manageState = context.watch<ManageModeCubit>().state;
+    final goalsState = context.watch<GoalsCubit>().state;
+    final yearGoalsState = context.watch<YearGoalsCubit>().state;
 
-            // In manage mode the Open add-slot is hidden (spec §3.6)
-            final visibleCategories = isManaging
-                ? catState.categories.where((c) => !c.isAddSlot).toList()
-                : catState.categories;
+    final isManaging = manageState.isManaging;
 
-            final categoriesCubit = context.read<GoalCategoriesCubit>();
-            final manageCubit = context.read<ManageModeCubit>();
+    // In manage mode the Open add-slot is hidden (spec §3.6)
+    final visibleCategories = isManaging
+        ? catState.categories.where((c) => !c.isAddSlot).toList()
+        : catState.categories;
 
-            return ReorderableGridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: AtelierSpacing.base, // 8
-              crossAxisSpacing: AtelierSpacing.base, // 8
-              padding: const EdgeInsets.fromLTRB(
-                AtelierSpacing.x3l, // 22
-                AtelierSpacing.sm, // 4
-                AtelierSpacing.x3l, // 22
-                20,
-              ),
-              shrinkWrap: true,
-              childAspectRatio: 0.88,
-              dragEnabled: isManaging,
-              onReorder: (int oldIndex, int newIndex) {
-                final reordered = List<GoalCategory>.from(visibleCategories);
-                final moved = reordered.removeAt(oldIndex);
-                reordered.insert(newIndex, moved);
-                // Only pass the real (non-add-slot) ids in new order
-                final realIds = reordered
-                    .where((c) => !c.isAddSlot)
-                    .map((c) => c.id)
-                    .toList();
-                categoriesCubit.reorder(realIds);
-              },
-              children: [
-                for (final category in visibleCategories)
-                  Pocket(
-                    key: ValueKey(category.id),
-                    category: category,
-                    yearGoalCount: 0,
-                    goalsPreview: const [],
-                    isManaging: isManaging && !category.isAddSlot,
-                    onTap: () {
-                      if (category.isAddSlot) {
-                        _showAddPocketSheet(context, categoriesCubit);
-                      } else {
-                        context.push('/pocket/${category.id}');
-                      }
-                    },
-                    onRemove: () => categoriesCubit.removePocket(category.id),
-                    onLongPress: () {
-                      if (!category.isAddSlot) manageCubit.enter();
-                    },
-                  ),
-              ],
-            );
-          },
-        );
+    final categoriesCubit = context.read<GoalCategoriesCubit>();
+    final manageCubit = context.read<ManageModeCubit>();
+
+    return ReorderableGridView.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: AtelierSpacing.base, // 8
+      crossAxisSpacing: AtelierSpacing.base, // 8
+      padding: const EdgeInsets.fromLTRB(
+        AtelierSpacing.x3l, // 22
+        AtelierSpacing.sm, // 4
+        AtelierSpacing.x3l, // 22
+        20,
+      ),
+      shrinkWrap: true,
+      childAspectRatio: 0.88,
+      dragEnabled: isManaging,
+      onReorder: (int oldIndex, int newIndex) {
+        final reordered = List<GoalCategory>.from(visibleCategories);
+        final moved = reordered.removeAt(oldIndex);
+        reordered.insert(newIndex, moved);
+        // Only pass the real (non-add-slot) ids in new order
+        final realIds = reordered
+            .where((c) => !c.isAddSlot)
+            .map((c) => c.id)
+            .toList();
+        categoriesCubit.reorder(realIds);
       },
+      children: [
+        for (final category in visibleCategories)
+          Pocket(
+            key: ValueKey(category.id),
+            category: category,
+            yearGoalCount: yearGoalsState.forCategory(category.id).length,
+            goalsPreview: goalsState.forCategory(category.id),
+            isManaging: isManaging && !category.isAddSlot,
+            onTap: () {
+              if (category.isAddSlot) {
+                _showAddPocketSheet(context, categoriesCubit);
+              } else {
+                context.push('/pocket/${category.id}');
+              }
+            },
+            onRemove: () => categoriesCubit.removePocket(category.id),
+            onLongPress: () {
+              if (!category.isAddSlot) manageCubit.enter();
+            },
+          ),
+      ],
     );
   }
 }

@@ -1,4 +1,8 @@
 import 'package:atelier/domain/models/goal_category.dart';
+import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
+import 'package:atelier/presentation/features/detail/state/goals_state.dart';
+import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
+import 'package:atelier/presentation/features/detail/state/year_goals_state.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_state.dart';
 import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart';
@@ -15,10 +19,16 @@ class _MockGoalCategoriesCubit extends Mock implements GoalCategoriesCubit {}
 
 class _MockManageModeCubit extends Mock implements ManageModeCubit {}
 
+class _MockGoalsCubit extends Mock implements GoalsCubit {}
+
+class _MockYearGoalsCubit extends Mock implements YearGoalsCubit {}
+
 Widget _wrap(
   Widget child, {
   required GoalCategoriesCubit categories,
   required ManageModeCubit manage,
+  required GoalsCubit goals,
+  required YearGoalsCubit yearGoals,
 }) => MaterialApp(
   theme: AtelierTheme.light(),
   home: Scaffold(
@@ -26,6 +36,8 @@ Widget _wrap(
       providers: [
         BlocProvider<GoalCategoriesCubit>.value(value: categories),
         BlocProvider<ManageModeCubit>.value(value: manage),
+        BlocProvider<GoalsCubit>.value(value: goals),
+        BlocProvider<YearGoalsCubit>.value(value: yearGoals),
       ],
       child: child,
     ),
@@ -35,10 +47,14 @@ Widget _wrap(
 void main() {
   late _MockGoalCategoriesCubit categoriesCubit;
   late _MockManageModeCubit manageCubit;
+  late _MockGoalsCubit goalsCubit;
+  late _MockYearGoalsCubit yearGoalsCubit;
 
   setUp(() {
     categoriesCubit = _MockGoalCategoriesCubit();
     manageCubit = _MockManageModeCubit();
+    goalsCubit = _MockGoalsCubit();
+    yearGoalsCubit = _MockYearGoalsCubit();
 
     when(() => categoriesCubit.state).thenReturn(
       const GoalCategoriesState(
@@ -56,6 +72,14 @@ void main() {
       () => manageCubit.state,
     ).thenReturn(const ManageModeState(isManaging: false));
     when(() => manageCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    when(() => goalsCubit.state).thenReturn(const GoalsState(loaded: true));
+    when(() => goalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => yearGoalsCubit.state,
+    ).thenReturn(const YearGoalsState(loaded: true));
+    when(() => yearGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
   });
 
   testWidgets('PocketGrid renders one Pocket per visible category §3.2', (
@@ -66,6 +90,8 @@ void main() {
         const PocketGrid(),
         categories: categoriesCubit,
         manage: manageCubit,
+        goals: goalsCubit,
+        yearGoals: yearGoalsCubit,
       ),
     );
     await tester.pump();
@@ -83,6 +109,8 @@ void main() {
         const PocketGrid(),
         categories: categoriesCubit,
         manage: manageCubit,
+        goals: goalsCubit,
+        yearGoals: yearGoalsCubit,
       ),
     );
     await tester.pump();

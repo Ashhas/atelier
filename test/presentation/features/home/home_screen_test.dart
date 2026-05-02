@@ -1,3 +1,7 @@
+import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
+import 'package:atelier/presentation/features/detail/state/goals_state.dart';
+import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
+import 'package:atelier/presentation/features/detail/state/year_goals_state.dart';
 import 'package:atelier/presentation/features/home/home_screen.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_state.dart';
@@ -16,15 +20,23 @@ class _MockGoalCategoriesCubit extends Mock implements GoalCategoriesCubit {}
 
 class _MockManageModeCubit extends Mock implements ManageModeCubit {}
 
+class _MockGoalsCubit extends Mock implements GoalsCubit {}
+
+class _MockYearGoalsCubit extends Mock implements YearGoalsCubit {}
+
 Widget _wrap({
   required GoalCategoriesCubit categories,
   required ManageModeCubit manage,
+  required GoalsCubit goals,
+  required YearGoalsCubit yearGoals,
 }) => MaterialApp(
   theme: AtelierTheme.light(),
   home: MultiBlocProvider(
     providers: [
       BlocProvider<GoalCategoriesCubit>.value(value: categories),
       BlocProvider<ManageModeCubit>.value(value: manage),
+      BlocProvider<GoalsCubit>.value(value: goals),
+      BlocProvider<YearGoalsCubit>.value(value: yearGoals),
     ],
     child: const HomeScreen(),
   ),
@@ -33,15 +45,27 @@ Widget _wrap({
 void main() {
   late _MockGoalCategoriesCubit categoriesCubit;
   late _MockManageModeCubit manageCubit;
+  late _MockGoalsCubit goalsCubit;
+  late _MockYearGoalsCubit yearGoalsCubit;
 
   setUp(() {
     categoriesCubit = _MockGoalCategoriesCubit();
     manageCubit = _MockManageModeCubit();
+    goalsCubit = _MockGoalsCubit();
+    yearGoalsCubit = _MockYearGoalsCubit();
 
     when(
       () => manageCubit.state,
     ).thenReturn(const ManageModeState(isManaging: false));
     when(() => manageCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    when(() => goalsCubit.state).thenReturn(const GoalsState(loaded: true));
+    when(() => goalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => yearGoalsCubit.state,
+    ).thenReturn(const YearGoalsState(loaded: true));
+    when(() => yearGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
   });
 
   testWidgets('shows HomeEmptyState when isEmpty §3.9', (tester) async {
@@ -51,7 +75,12 @@ void main() {
     when(() => categoriesCubit.stream).thenAnswer((_) => const Stream.empty());
 
     await tester.pumpWidget(
-      _wrap(categories: categoriesCubit, manage: manageCubit),
+      _wrap(
+        categories: categoriesCubit,
+        manage: manageCubit,
+        goals: goalsCubit,
+        yearGoals: yearGoalsCubit,
+      ),
     );
     expect(find.byType(HomeEmptyState), findsOneWidget);
     expect(find.byType(PocketGrid), findsNothing);
@@ -77,7 +106,12 @@ void main() {
     ).thenReturn(const GoalCategoriesState(loaded: false, categories: []));
 
     await tester.pumpWidget(
-      _wrap(categories: categoriesCubit, manage: manageCubit),
+      _wrap(
+        categories: categoriesCubit,
+        manage: manageCubit,
+        goals: goalsCubit,
+        yearGoals: yearGoalsCubit,
+      ),
     );
     // When not loaded, isEmpty == false, so grid shows
     expect(find.byType(HomeEmptyState), findsNothing);
@@ -95,7 +129,12 @@ void main() {
     ).thenReturn(const ManageModeState(isManaging: true));
 
     await tester.pumpWidget(
-      _wrap(categories: categoriesCubit, manage: manageCubit),
+      _wrap(
+        categories: categoriesCubit,
+        manage: manageCubit,
+        goals: goalsCubit,
+        yearGoals: yearGoalsCubit,
+      ),
     );
     // Tap on the background area
     await tester.tapAt(const Offset(10, 10));

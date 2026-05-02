@@ -2,58 +2,13 @@ import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
 import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
 import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart';
+import 'package:atelier/presentation/features/home/widgets/grid/add_pocket_sheet.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-
-void _showAddPocketSheet(BuildContext context, GoalCategoriesCubit cubit) {
-  final controller = TextEditingController();
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: AtelierSpacing.x3l,
-          right: AtelierSpacing.x3l,
-          top: AtelierSpacing.x3l,
-          bottom:
-              MediaQuery.of(sheetContext).viewInsets.bottom +
-              AtelierSpacing.x3l,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                autofocus: true,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(hintText: 'New pocket name…'),
-                onSubmitted: (_) {
-                  final name = controller.text.trim();
-                  if (name.isNotEmpty) cubit.addPocket(name);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-            ),
-            const SizedBox(width: AtelierSpacing.base),
-            TextButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isNotEmpty) cubit.addPocket(name);
-                Navigator.of(sheetContext).pop();
-              },
-              child: const Text('ADD'),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
 
 /// 2-column masonry grid of pocket cards, driven by [GoalCategoriesCubit].
 ///
@@ -107,7 +62,6 @@ class PocketGrid extends StatelessWidget {
         AtelierSpacing.x3l, // 22
         20,
       ),
-      shrinkWrap: true,
       itemCount: visibleCategories.length,
       itemBuilder: (context, index) {
         final category = visibleCategories[index];
@@ -126,7 +80,7 @@ class PocketGrid extends StatelessWidget {
           isManaging: isManaging && !category.isAddSlot,
           onTap: () {
             if (category.isAddSlot) {
-              _showAddPocketSheet(context, categoriesCubit);
+              showAddPocketSheet(context, categoriesCubit);
             } else {
               context.push('/pocket/${category.id}');
             }

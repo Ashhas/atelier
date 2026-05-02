@@ -1,6 +1,8 @@
 # Atelier — Design Spec
 
 > Flutter port of the "Atelier — Pockets" HTML/React prototype from a Claude Design handoff. Personal monthly goals app organised into year-pockets, each holding 2026 north-stars and a list of monthly goals. Offline-first, single user, persistent local storage. The handoff bundle (README, chats, prototype source) is preserved at `docs/design-handoff/`.
+>
+> **Owner:** Ashhas Studio. Application ID / iOS bundle identifier: `studio.ashhas.atelier.atelier`. Android namespace + Kotlin package: `studio.ashhas.atelier.atelier`.
 
 ## 1. Goals & non-goals
 

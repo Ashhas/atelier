@@ -1,4 +1,4 @@
-package nl.kabisa.atelier.atelier
+package studio.ashhas.atelier.atelier
 
 import io.flutter.embedding.android.FlutterActivity
 

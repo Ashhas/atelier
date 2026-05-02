@@ -7,7 +7,54 @@ import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+
+void _showAddPocketSheet(BuildContext context, GoalCategoriesCubit cubit) {
+  final controller = TextEditingController();
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: AtelierSpacing.x3l,
+          right: AtelierSpacing.x3l,
+          top: AtelierSpacing.x3l,
+          bottom:
+              MediaQuery.of(sheetContext).viewInsets.bottom +
+              AtelierSpacing.x3l,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(hintText: 'New pocket name…'),
+                onSubmitted: (_) {
+                  final name = controller.text.trim();
+                  if (name.isNotEmpty) cubit.addPocket(name);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            ),
+            const SizedBox(width: AtelierSpacing.base),
+            TextButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) cubit.addPocket(name);
+                Navigator.of(sheetContext).pop();
+              },
+              child: const Text('ADD'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
 /// 2-column reorderable grid of pocket cards, driven by [GoalCategoriesCubit].
 ///
@@ -67,7 +114,11 @@ class PocketGrid extends StatelessWidget {
                     goalsPreview: const [],
                     isManaging: isManaging && !category.isAddSlot,
                     onTap: () {
-                      // Navigation to detail (to be wired by HomeScreen)
+                      if (category.isAddSlot) {
+                        _showAddPocketSheet(context, categoriesCubit);
+                      } else {
+                        context.go('/pocket/${category.id}');
+                      }
                     },
                     onRemove: () => categoriesCubit.removePocket(category.id),
                     onLongPress: () {

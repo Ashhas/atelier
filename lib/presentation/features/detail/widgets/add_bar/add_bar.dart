@@ -5,6 +5,7 @@ import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
+import 'package:atelier/theme/atelier_typography.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -96,14 +97,35 @@ class _AddBarState extends State<AddBar> {
             ),
           ),
           const SizedBox(width: AtelierSpacing.md),
-          if (_composing)
+          if (_composing) ...[
             AddBarInput(
               controller: _controller,
               placeholder: _placeholder,
               onSubmit: _submit,
               onCancel: _cancel,
-            )
-          else
+            ),
+            const SizedBox(width: AtelierSpacing.sm),
+            GestureDetector(
+              onTap: _submit,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AtelierSpacing.base,
+                  horizontal: AtelierSpacing.lg,
+                ),
+                decoration: BoxDecoration(
+                  color: p.ink,
+                  borderRadius: BorderRadius.circular(AtelierRadii.pill),
+                ),
+                child: Text(
+                  'ADD',
+                  style: AtelierTypography.monoLabel.copyWith(
+                    color: p.bg,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+          ] else
             AddBarPlaceholder(
               label: _placeholder,
               onTap: () => setState(() => _composing = true),

@@ -1,3 +1,4 @@
+import 'package:atelier/presentation/features/settings/widgets/reset_pill_button.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
@@ -23,8 +24,6 @@ class ResetDataConfirm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final resetBg = isDark ? const Color(0xFFc54545) : const Color(0xFFb91c1c);
 
     return Container(
       padding: const EdgeInsets.all(AtelierSpacing.xl), // 14
@@ -49,7 +48,7 @@ class ResetDataConfirm extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _PillButton(
+                child: ResetPillButton(
                   label: 'CANCEL',
                   background: Colors.transparent,
                   textColor: c.ink,
@@ -59,9 +58,9 @@ class ResetDataConfirm extends StatelessWidget {
               ),
               const SizedBox(width: AtelierSpacing.base),
               Expanded(
-                child: _PillButton(
+                child: ResetPillButton(
                   label: 'RESET',
-                  background: resetBg,
+                  background: c.error,
                   textColor: Colors.white,
                   border: null,
                   onTap: onReset,
@@ -70,46 +69,6 @@ class ResetDataConfirm extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PillButton extends StatelessWidget {
-  const _PillButton({
-    required this.label,
-    required this.background,
-    required this.textColor,
-    required this.border,
-    required this.onTap,
-  });
-
-  final String label;
-  final Color background;
-  final Color textColor;
-  final BoxBorder? border;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AtelierSpacing.lg,
-          horizontal: AtelierSpacing.base + AtelierSpacing.sm, // 12
-        ),
-        decoration: BoxDecoration(
-          color: background,
-          border: border,
-          borderRadius: BorderRadius.circular(AtelierRadii.pill),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AtelierTypography.monoLabel.copyWith(color: textColor),
-          ),
-        ),
       ),
     );
   }

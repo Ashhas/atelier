@@ -20,6 +20,7 @@ class AtelierColors {
     starInk: Color(0xFF0A0A0A),
     yearBg: Color(0xFFF5F5F2),
     yearInk: Color(0xFF0A0A0A),
+    error: Color(0xFFB91C1C), // deeper red for contrast on light bg
   );
 
   static const AtelierPalette dark = AtelierPalette(
@@ -38,5 +39,6 @@ class AtelierColors {
     starInk: Color(0xFFFFFFFF),
     yearBg: Color(0xFF181818),
     yearInk: Color(0xFFFFFFFF),
+    error: Color(0xFFC54545), // lighter red for contrast on dark bg
   );
 }

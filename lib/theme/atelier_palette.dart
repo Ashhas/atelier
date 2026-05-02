@@ -19,6 +19,7 @@ class AtelierPalette {
     required this.starInk,
     required this.yearBg,
     required this.yearInk,
+    required this.error,
   });
 
   final Color bg;
@@ -36,4 +37,5 @@ class AtelierPalette {
   final Color starInk;
   final Color yearBg;
   final Color yearInk;
+  final Color error;
 }

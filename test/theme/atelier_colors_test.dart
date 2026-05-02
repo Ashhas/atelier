@@ -20,6 +20,7 @@ void main() {
       expect(p.starInk, const Color(0xFF0A0A0A));
       expect(p.yearBg, const Color(0xFFF5F5F2));
       expect(p.yearInk, const Color(0xFF0A0A0A));
+      expect(p.error, const Color(0xFFB91C1C));
     });
   });
 
@@ -40,6 +41,7 @@ void main() {
       expect(p.starInk, const Color(0xFFFFFFFF));
       expect(p.yearBg, const Color(0xFF181818));
       expect(p.yearInk, const Color(0xFFFFFFFF));
+      expect(p.error, const Color(0xFFC54545));
     });
   });
 }

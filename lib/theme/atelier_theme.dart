@@ -26,7 +26,7 @@ class AtelierTheme {
         onPrimary: p.bg,
         secondary: p.accent,
         onSecondary: p.bg,
-        error: const Color(0xFFB35454),
+        error: p.error,
         onError: p.bg,
         surface: p.surface,
         onSurface: p.ink,

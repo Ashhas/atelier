@@ -30,8 +30,9 @@ class DriftYearGoalRepository implements YearGoalRepository {
 
   @override
   Future<void> update(YearGoal yg) async {
-    await (_db.update(_db.yearGoalsTable)..where((t) => t.id.equals(yg.id)))
-        .write(_toCompanion(yg));
+    await (_db.update(
+      _db.yearGoalsTable,
+    )..where((t) => t.id.equals(yg.id))).write(_toCompanion(yg));
   }
 
   @override
@@ -45,16 +46,16 @@ class DriftYearGoalRepository implements YearGoalRepository {
   }
 
   YearGoal _fromRow(YearGoalRow r) => YearGoal(
-        id: r.id,
-        goalCategoryId: r.goalCategoryId,
-        title: r.title,
-        expanded: r.expanded,
-      );
+    id: r.id,
+    goalCategoryId: r.goalCategoryId,
+    title: r.title,
+    expanded: r.expanded,
+  );
 
   YearGoalsTableCompanion _toCompanion(YearGoal y) => YearGoalsTableCompanion(
-        id: Value(y.id),
-        goalCategoryId: Value(y.goalCategoryId),
-        title: Value(y.title),
-        expanded: Value(y.expanded),
-      );
+    id: Value(y.id),
+    goalCategoryId: Value(y.goalCategoryId),
+    title: Value(y.title),
+    expanded: Value(y.expanded),
+  );
 }

@@ -87,7 +87,7 @@ Composition (built from the existing design vocabulary — dashed hairline borde
   - **Primary action** — pill button matching the existing `C.ink` "Done" pill in manage mode, scaled slightly: `+ ADD YOUR FIRST POCKET` in JetBrains Mono caps 10px / letter-spacing 1.4 / weight 600, `padding 12px 18px`, `borderRadius 999`, `background: C.ink`, `color: C.bg`.
 - Tapping the action button enters the same add-pocket flow as tapping `Open` (small input → submit → create `GoalCategory`). On the first successful add: also create the `Open` add-slot row, then home transitions to the normal grid view.
 - The settings gear remains active in the empty state so theme / font scale can be set before adding the first pocket.
-- `HomeEmptyState` gets its own widget file at `lib/ui/features/home/widgets/empty_state/home_empty_state.dart`, with sub-components in the same folder (`home_empty_state_eyebrow.dart`, `home_empty_state_body.dart`, `home_empty_state_action.dart`) per the one-widget-per-file rule.
+- `HomeEmptyState` gets its own widget file at `lib/presentation/features/home/widgets/empty_state/home_empty_state.dart`, with sub-components in the same folder (`home_empty_state_eyebrow.dart`, `home_empty_state_body.dart`, `home_empty_state_action.dart`) per the one-widget-per-file rule.
 
 ### 3.8 Tick strip
 - 28 / 30 / 31 vertical ticks for the current month. Today's tick is `2px` wide, full height (14px), painted with the accent colour.
@@ -270,54 +270,58 @@ Patterned after the in-house `Plastic-Avengers-Flutter` project (`lib/ui/{featur
 ```
 atelier/
   lib/
-    main.dart                              # entrypoint: init DB, prefs, run AtelierApp
+    main.dart                                # entrypoint: bootstrap DB + prefs, run AtelierApp
     config/
-      atelier_app.dart                     # MaterialApp.router + MultiBlocProvider
-      router.dart                          # go_router config
+      atelier_app.dart                       # MaterialApp.router + MultiBlocProvider (composition root)
+      router.dart                            # go_router config
     theme/
-      atelier_palette.dart                 # AtelierPalette type
-      atelier_colors.dart                  # light + dark palette constants
-      atelier_typography.dart              # Fraunces / Inter / JetBrains Mono helpers
-      atelier_theme.dart                   # ThemeData builders for light + dark
-    models/
-      goal_category.dart
-      goal.dart
-      year_goal.dart
-      app_settings.dart
-      enums/
-        font_scale.dart
-    services/
-      repositories/
-        interfaces/                          # abstract contracts; one file per repo
-          goal_category_repository.dart
-          goal_repository.dart
-          year_goal_repository.dart
-          settings_repository.dart
-        implementations/                     # concrete impls of the contracts above
-          drift_goal_category_repository.dart
-          drift_goal_repository.dart
-          drift_year_goal_repository.dart
-          prefs_settings_repository.dart
+      atelier_palette.dart                   # AtelierPalette type
+      atelier_colors.dart                    # light + dark palette constants
+      atelier_typography.dart                # TextStyle tokens — Fraunces / Inter / JetBrains Mono
+      atelier_theme.dart                     # ThemeData builders for light + dark
+
+    domain/
+      models/
+        goal_category.dart                   # plain immutable data class
+        goal.dart
+        year_goal.dart
+        app_settings.dart
+        enums/
+          font_scale.dart
+      repositories/                          # CONTRACTS only — abstract classes
+        goal_category_repository.dart
+        goal_repository.dart
+        year_goal_repository.dart
+        settings_repository.dart
+
+    data/
       drift/
-        atelier_database.dart                # @DriftDatabase root (schema only)
+        atelier_database.dart                # @DriftDatabase root
         tables/
           goal_categories_table.dart
           goals_table.dart
           year_goals_table.dart
-      open_slot/
-        open_slot_creator.dart               # orchestrator: creates the Open add-slot row when the user's first pocket is added
-    utils/
-      date_utils.dart                      # daysInMonth, daysSince helpers
-      uuid.dart                            # uuid v4 wrapper
-    ui/
+      repositories/                          # IMPLEMENTATIONS only
+        drift_goal_category_repository.dart  # implements GoalCategoryRepository
+        drift_goal_repository.dart           # implements GoalRepository
+        drift_year_goal_repository.dart      # implements YearGoalRepository
+        prefs_settings_repository.dart       # implements SettingsRepository
+      # future: data/supabase/, data/cache/, etc.
+
+    services/
+      open_slot_creator.dart                 # orchestrator — composes repository calls;
+                                             # creates the Open add-slot row on first pocket add
+      # future: notification_service.dart, analytics_service.dart, etc.
+
+    presentation/
       features/
         home/
-          home_container.dart              # creates cubits, hosts BlocProvider, builds HomeScreen
-          home_screen.dart                 # pure UI, reads from cubits via BlocBuilder
+          home_container.dart                # creates cubits, hosts BlocProvider, builds HomeScreen
+          home_screen.dart                   # pure UI, reads via BlocBuilder
           state/
-            home_cubit.dart                # composes GoalCategories + Goals + YearGoals reads for the grid
+            home_cubit.dart                  # composes GoalCategories + Goals + YearGoals reads
             home_state.dart
-            manage_mode_cubit.dart         # UI-only manage state
+            manage_mode_cubit.dart           # UI-only manage mode state
             manage_mode_state.dart
           widgets/
             top_bar/
@@ -338,9 +342,9 @@ atelier/
               pocket_remove_badge.dart
               pocket_empty_state.dart
             grid/
-              pocket_grid.dart             # ReorderableGridView wrapper
+              pocket_grid.dart               # ReorderableGridView wrapper
             empty_state/
-              home_empty_state.dart        # rendered when goal-categories list is empty
+              home_empty_state.dart          # rendered when goal-categories list is empty
               home_empty_state_eyebrow.dart
               home_empty_state_body.dart
               home_empty_state_action.dart
@@ -373,7 +377,7 @@ atelier/
               add_bar_input.dart
               add_bar_placeholder.dart
         settings/
-          settings_sheet.dart              # the shell — modal bottom sheet
+          settings_sheet.dart                # the shell — modal bottom sheet
           state/
             settings_cubit.dart
             settings_state.dart
@@ -385,31 +389,36 @@ atelier/
             font_scale_selector.dart
             reset_data_button.dart
             reset_data_confirm.dart
-        cubits/
+        cubits/                              # app-wide cubits (not feature-scoped)
           goal_categories/
-            goal_categories_cubit.dart               # global goal-categories list (CRUD + reorder)
+            goal_categories_cubit.dart       # global goal-categories list (CRUD + reorder)
             goal_categories_state.dart
           goals/
-            goals_cubit.dart               # global goals list (CRUD + sort)
+            goals_cubit.dart                 # global goals list (CRUD + sort)
             goals_state.dart
           year_goals/
             year_goals_cubit.dart
             year_goals_state.dart
-      common/
+      common/                                # shared UI atoms
         segmented/
           segmented.dart
           segmented_option.dart
-        typography/
-          mono_label.dart
+        text/
+          mono_label.dart                    # widget that renders TextStyle tokens from theme/atelier_typography.dart
           serif_title.dart
-        layout/
-          phone_safe_area.dart             # top status-bar inset wrapper
+
+    utils/
+      date_utils.dart                        # daysInMonth, daysSince helpers
+      uuid.dart                              # uuid v4 wrapper
+
   test/
-    services/
-      repositories/
-        implementations/                   # repository impl tests (drift + prefs)
-      open_slot/                           # open_slot_creator tests
-    ui/
+    domain/
+      repositories/                          # contract conformance helpers (shared test fixtures)
+    data/
+      drift/                                 # repo impl tests against a real Drift DB
+      repositories/                          # prefs impl tests
+    services/                                # open_slot_creator tests
+    presentation/
       features/
         home/
           state/
@@ -422,27 +431,62 @@ atelier/
           widgets/
       common/
     golden/
+
   docs/
-    design-handoff/                        # original prototype + chats
-    superpowers/specs/                     # this file
+    design-handoff/                          # original prototype + chats
+    superpowers/specs/                       # this file
 ```
 
-**Notes on layout choices (matching Plastic Avengers conventions, with one refinement):**
-- `lib/services/` is the umbrella for all data + orchestration concerns. Inside it, `repositories/interfaces/` holds the abstract contracts and `repositories/implementations/` holds the concrete impls (drift + prefs). The split makes the repository pattern's "swap impl, keep interface" promise visually obvious — adding a future `SupabaseGoalRepository` means adding a single file under `implementations/` and switching which one is constructed in `main.dart`.
-- `services/drift/` holds *only* the database schema (the `@DriftDatabase` root and table definitions). The Drift-backed repository implementations live with the other implementations under `repositories/implementations/`. This keeps "what the database is" separate from "how a repository talks to it."
-- `services/open_slot/` is a sibling service that orchestrates the lazy creation of the `Open` add-slot row when the user adds their first pocket. It is not a repository; it composes calls into `GoalCategoryRepository`.
-- This is a small refinement of the Plastic-Avengers convention (where services like `photo_storage_service.dart` sit flat at the top of `lib/services/`). Atelier's service surface is nearly all repository-shaped, so the explicit `repositories/` split pays off; non-repository services (e.g. future `open_slot/`) still live flat alongside it.
-- `lib/ui/features/<feature>/` instead of `lib/features/<feature>/` — keeps presentation cleanly separate from data.
-- Each feature has a `<feature>_container.dart` (creates / provides cubits) + `<feature>_screen.dart` (pure UI). This mirrors `campaigns_container.dart` + `campaigns_screen.dart` in the reference project.
-- Cubits live in `state/` inside their owning feature when feature-scoped, or in `lib/ui/features/cubits/` when global (goal-categories / goals / year-goals are app-wide).
-- Widgets nest by purpose subgroup (e.g. `widgets/top_bar/`, `widgets/pocket/`, `widgets/year_banner/`) to keep file lists short and intent-readable. Same pattern as `widgets/cards/active_campaign_card/` in the reference.
-- `lib/common/` instead of `lib/widgets/` for shared atoms — and grouped by kind (`segmented/`, `typography/`).
+**Notes on layout choices — three-layer clean-architecture-lite:**
+
+The top of `lib/` splits into seven folders, each with a single sharp responsibility:
+
+| Folder | Owns | Knows |
+|---|---|---|
+| `domain/` | Models + repository contracts (abstract classes) | Nothing outside itself. Pure Dart, no Flutter, no Drift, no Bloc. |
+| `data/` | Repository implementations + DB schema | Knows `domain/` (implements its contracts). Knows Drift / SharedPreferences. |
+| `services/` | Orchestrators that compose multiple repositories | Knows `domain/` (depends on contracts, not impls). |
+| `presentation/` | Cubits, screens, widgets | Knows `domain/` (consumes contracts via DI). Does NOT know `data/`. |
+| `config/` | App shell, routing, composition root | The only place that imports from `data/` and constructs concrete repository impls; injects them into cubits via `MultiBlocProvider`. |
+| `theme/` | Visual tokens (palettes, `TextStyle` constants, `ThemeData` builders) | Pure values; no logic. |
+| `utils/` | Pure helpers (`uuid`, date math) | No deps on anything domain-specific. |
+
+Dependency direction (one-way, top-down):
+
+```
+config ──▶ data ──▶ domain ◀── services ◀── presentation
+                              ▲
+                              └────── presentation also depends on domain
+```
+
+`data/`, `services/`, and `presentation/` all depend on `domain/` (they implement / consume its contracts). They do **not** depend on each other.
+
+**Why this layout:**
+
+- The "domain doesn't know about data" rule is enforced by directory structure, not just discipline. An import of `package:atelier/data/...` from inside `lib/domain/` is immediately visible as wrong.
+- Future Supabase port: write `data/supabase/supabase_*_repository.dart`, change one line in `config/atelier_app.dart` to inject the new impl. `domain/` and `presentation/` don't change.
+- `data/drift/` holds *only* the DB schema (database root + tables). Drift-backed repository impls live under `data/repositories/` next to the prefs impl, because they're peers — both implement contracts from `domain/repositories/`. This keeps "what the database is" separate from "how a repository talks to it" while still letting Drift impls live in the same top-level `data/` umbrella.
+- `services/` is reserved for *orchestrators* — code that composes calls across multiple repositories. Today that's just `open_slot_creator.dart`. Tomorrow it might be `notification_service.dart`, `sync_service.dart`, etc. They explicitly are not repositories.
+- `theme/` holds the type *tokens* (`TextStyle` constants in `atelier_typography.dart`); `presentation/common/text/` holds the *widgets* (`MonoLabel`, `SerifTitle`) that consume those tokens. The folder is named `text/`, not `typography/`, to keep that distinction crisp.
+
+**Presentation conventions:**
+
+- Each feature has a `<feature>_container.dart` (the wiring point — creates cubits, hosts `BlocProvider`) + `<feature>_screen.dart` (pure UI that reads from cubits via `BlocBuilder` / `BlocSelector`). This split keeps containers thin and screens unit-testable in isolation.
+- Cubits live in `state/` inside their owning feature when feature-scoped (e.g. `home_cubit`, `manage_mode_cubit`), or in `presentation/features/cubits/` when app-wide (goal-categories, goals, year-goals are shared across home + detail + settings).
+- Widgets nest by purpose subgroup (`widgets/top_bar/`, `widgets/pocket/`, `widgets/year_banner/`, `widgets/empty_state/`) so file lists stay short and intent-readable.
+- `presentation/common/` holds shared UI atoms grouped by kind (`segmented/`, `text/`).
+- One widget per file, every named widget gets its own file (see §7 coding rules).
+
+**Trade-offs accepted:**
+
+- Five top-level layers (`config`, `theme`, `domain`, `data`, `services`, `presentation`, `utils`) is more navigation than a flat layout. For an app this size we accept the cost in exchange for the structural enforcement of the dependency rules above.
+- `domain/models/` for four data classes is mildly ceremonial, but keeping models in `domain/` lets us co-locate them with the contracts they appear in (model classes are part of the domain language; repository signatures use them).
 
 ## 12. Build sequence (rough)
 
 1. Theme + typography + base widgets (Segmented, MonoLabel, SerifTitle)
-2. Domain models + repository interfaces (under `services/repositories/interfaces/`)
-3. Drift setup — schema (`services/drift/`: database root + tables) + repository implementations (`services/repositories/implementations/drift_*_repository.dart`); no seeding (first launch is empty)
+2. Domain layer: `domain/models/` (plain data classes) + `domain/repositories/` (abstract contracts)
+3. Data layer: `data/drift/` (schema — database root + tables) + `data/repositories/` (Drift impls + prefs impl); no seeding (first launch is empty)
 4. SharedPreferences settings repo
 5. Cubits + states wired to repos, registered via `MultiBlocProvider` at app root
 6. HomeScreen scaffold + TickStrip + Pocket (read-only first)

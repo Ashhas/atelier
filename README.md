@@ -1,16 +1,28 @@
-# atelier
+# Atelier
 
-A new Flutter project.
+Personal monthly goals app — at-a-glance pockets for the things you're working on.
 
-## Getting Started
+A Flutter port of the Claude Design "Atelier — Pockets" prototype, built for Ashhas Studio.
 
-This project is a starting point for a Flutter application.
+## Status
 
-A few resources to get you started if this is your first Flutter project:
+v1 — local-first, single user, Android + iOS.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Run
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run
+```
+
+## Develop
+
+```bash
+tool/check.sh   # format + analyze + test
+```
+
+## Layout
+
+See `docs/superpowers/specs/2026-05-02-atelier-design.md` for the architecture spec.
+The original Claude Design handoff is preserved at `docs/design-handoff/`.

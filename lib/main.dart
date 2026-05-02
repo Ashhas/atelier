@@ -1,24 +1,11 @@
-import 'package:atelier/theme/atelier_theme.dart';
-import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/config/atelier_app.dart';
+import 'package:atelier/data/drift/atelier_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const _PreviewApp());
-}
-
-class _PreviewApp extends StatelessWidget {
-  const _PreviewApp();
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: AtelierTheme.light(),
-      darkTheme: AtelierTheme.dark(),
-      home: Scaffold(
-        body: Center(
-          child: Text('Atelier', style: AtelierTypography.serifDisplay),
-        ),
-      ),
-    );
-  }
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database = AtelierDatabase();
+  final prefs = await SharedPreferences.getInstance();
+  runApp(AtelierApp(database: database, prefs: prefs));
 }

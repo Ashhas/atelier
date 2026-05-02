@@ -14,11 +14,13 @@ class GoalCategoriesState extends Equatable {
   /// Whether the user has zero real pockets (drives the empty-state UI).
   bool get isEmpty => loaded && realCategories.isEmpty;
 
-  GoalCategoriesState copyWith({List<GoalCategory>? categories, bool? loaded}) =>
-      GoalCategoriesState(
-        categories: categories ?? this.categories,
-        loaded: loaded ?? this.loaded,
-      );
+  GoalCategoriesState copyWith({
+    List<GoalCategory>? categories,
+    bool? loaded,
+  }) => GoalCategoriesState(
+    categories: categories ?? this.categories,
+    loaded: loaded ?? this.loaded,
+  );
 
   @override
   List<Object?> get props => [categories, loaded];

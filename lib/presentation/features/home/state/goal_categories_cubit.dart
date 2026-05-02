@@ -4,7 +4,8 @@ import 'package:atelier/services/open_slot_creator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class GoalCategoriesCubit extends Cubit<GoalCategoriesState> {
-  GoalCategoriesCubit(this._repo, this._openSlot) : super(const GoalCategoriesState());
+  GoalCategoriesCubit(this._repo, this._openSlot)
+    : super(const GoalCategoriesState());
 
   final GoalCategoryRepository _repo;
   final OpenSlotCreator _openSlot;
@@ -39,7 +40,9 @@ class GoalCategoriesCubit extends Cubit<GoalCategoriesState> {
   }
 
   Future<void> reorder(List<String> realIdsInNewOrder) async {
-    final openSlot = state.categories.where((c) => c.isAddSlot).map((c) => c.id);
+    final openSlot = state.categories
+        .where((c) => c.isAddSlot)
+        .map((c) => c.id);
     await _repo.reorder([...realIdsInNewOrder, ...openSlot]);
     await load();
   }

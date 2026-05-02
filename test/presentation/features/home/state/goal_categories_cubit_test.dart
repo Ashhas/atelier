@@ -31,19 +31,25 @@ void main() {
     expect(emitted.last.categories, isEmpty);
   });
 
-  test('addPocket on empty creates first pocket + Open slot and re-emits', () async {
-    final cubit = GoalCategoriesCubit(repo, creator);
-    final emitted = <GoalCategoriesState>[];
-    final sub = cubit.stream.listen(emitted.add);
-    await cubit.load();
-    await cubit.addPocket('Work');
-    await Future<void>.delayed(Duration.zero);
-    await sub.cancel();
-    // Skip the load() emission, check the addPocket emission
-    final afterAdd = emitted.skip(1).toList();
-    expect(afterAdd, hasLength(1));
-    expect(afterAdd.last.categories.map((c) => c.name).toList(), ['Work', 'Open']);
-  });
+  test(
+    'addPocket on empty creates first pocket + Open slot and re-emits',
+    () async {
+      final cubit = GoalCategoriesCubit(repo, creator);
+      final emitted = <GoalCategoriesState>[];
+      final sub = cubit.stream.listen(emitted.add);
+      await cubit.load();
+      await cubit.addPocket('Work');
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      // Skip the load() emission, check the addPocket emission
+      final afterAdd = emitted.skip(1).toList();
+      expect(afterAdd, hasLength(1));
+      expect(afterAdd.last.categories.map((c) => c.name).toList(), [
+        'Work',
+        'Open',
+      ]);
+    },
+  );
 
   test('removePocket on last real pocket removes Open too', () async {
     final cubit = GoalCategoriesCubit(repo, creator);
@@ -74,6 +80,10 @@ void main() {
     await sub.cancel();
     final afterReorder = emitted.skip(4).toList();
     expect(afterReorder, hasLength(1));
-    expect(afterReorder.last.realCategories.map((c) => c.name).toList(), ['C', 'A', 'B']);
+    expect(afterReorder.last.realCategories.map((c) => c.name).toList(), [
+      'C',
+      'A',
+      'B',
+    ]);
   });
 }

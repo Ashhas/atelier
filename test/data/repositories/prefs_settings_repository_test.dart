@@ -17,7 +17,9 @@ void main() {
   test('write then read round-trips', () async {
     final prefs = await SharedPreferences.getInstance();
     final repo = PrefsSettingsRepository(prefs);
-    await repo.write(const AppSettings(themeMode: ThemeMode.dark, fontScale: FontScale.large));
+    await repo.write(
+      const AppSettings(themeMode: ThemeMode.dark, fontScale: FontScale.large),
+    );
     expect(
       await repo.read(),
       const AppSettings(themeMode: ThemeMode.dark, fontScale: FontScale.large),

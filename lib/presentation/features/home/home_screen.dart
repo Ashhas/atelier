@@ -31,34 +31,33 @@ class HomeScreen extends StatelessWidget {
             final manageCubit = context.read<ManageModeCubit>();
             final now = DateTime.now();
 
+            final body = Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                HomeTopBar(
+                  now: now,
+                  isManaging: isManaging,
+                  onSettings: () => _openSettings(context),
+                  onDone: manageCubit.exit,
+                ),
+                Expanded(
+                  child: isEmpty
+                      ? const SingleChildScrollView(child: HomeEmptyState())
+                      : const SingleChildScrollView(child: PocketGrid()),
+                ),
+              ],
+            );
+
             return Scaffold(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               body: SafeArea(
-                child: GestureDetector(
-                  // Tap outside any pocket while managing exits manage mode
-                  behavior: HitTestBehavior.translucent,
-                  onTap: isManaging ? manageCubit.exit : null,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Chrome (top bar + tick strip) always visible
-                      HomeTopBar(
-                        now: now,
-                        isManaging: isManaging,
-                        onSettings: () => _openSettings(context),
-                        onDone: manageCubit.exit,
-                      ),
-                      // Grid or empty state
-                      Expanded(
-                        child: isEmpty
-                            ? const SingleChildScrollView(
-                                child: HomeEmptyState(),
-                              )
-                            : const SingleChildScrollView(child: PocketGrid()),
-                      ),
-                    ],
-                  ),
-                ),
+                child: isManaging
+                    ? GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: manageCubit.exit,
+                        child: body,
+                      )
+                    : body,
               ),
             );
           },

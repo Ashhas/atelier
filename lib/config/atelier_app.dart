@@ -15,39 +15,58 @@ import 'package:atelier/services/open_slot_creator.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AtelierApp extends StatelessWidget {
+class AtelierApp extends StatefulWidget {
   const AtelierApp({super.key, required this.database, required this.prefs});
 
   final AtelierDatabase database;
   final SharedPreferences prefs;
 
   @override
-  Widget build(BuildContext context) {
-    final categoriesRepo = DriftGoalCategoryRepository(database);
-    final goalsRepo = DriftGoalRepository(database);
-    final yearGoalsRepo = DriftYearGoalRepository(database);
-    final settingsRepo = PrefsSettingsRepository(prefs);
-    final openSlot = OpenSlotCreator(categoriesRepo);
-    final resetter = DataResetter(
-      categories: categoriesRepo,
-      goals: goalsRepo,
-      yearGoals: yearGoalsRepo,
-      settingsRepository: settingsRepo,
-    );
+  State<AtelierApp> createState() => _AtelierAppState();
+}
 
+class _AtelierAppState extends State<AtelierApp> {
+  late final DriftGoalCategoryRepository _categoriesRepo;
+  late final DriftGoalRepository _goalsRepo;
+  late final DriftYearGoalRepository _yearGoalsRepo;
+  late final PrefsSettingsRepository _settingsRepo;
+  late final OpenSlotCreator _openSlot;
+  late final DataResetter _resetter;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesRepo = DriftGoalCategoryRepository(widget.database);
+    _goalsRepo = DriftGoalRepository(widget.database);
+    _yearGoalsRepo = DriftYearGoalRepository(widget.database);
+    _settingsRepo = PrefsSettingsRepository(widget.prefs);
+    _openSlot = OpenSlotCreator(_categoriesRepo);
+    _resetter = DataResetter(
+      categories: _categoriesRepo,
+      goals: _goalsRepo,
+      yearGoals: _yearGoalsRepo,
+      settingsRepository: _settingsRepo,
+    );
+    _router = AtelierRouter.build();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MultiRepositoryProvider(
-      providers: [RepositoryProvider.value(value: resetter)],
+      providers: [RepositoryProvider.value(value: _resetter)],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
             create: (_) =>
-                GoalCategoriesCubit(categoriesRepo, openSlot)..load(),
+                GoalCategoriesCubit(_categoriesRepo, _openSlot)..load(),
           ),
-          BlocProvider(create: (_) => GoalsCubit(goalsRepo)..load()),
-          BlocProvider(create: (_) => YearGoalsCubit(yearGoalsRepo)..load()),
-          BlocProvider(create: (_) => SettingsCubit(settingsRepo)..load()),
+          BlocProvider(create: (_) => GoalsCubit(_goalsRepo)..load()),
+          BlocProvider(create: (_) => YearGoalsCubit(_yearGoalsRepo)..load()),
+          BlocProvider(create: (_) => SettingsCubit(_settingsRepo)..load()),
           BlocProvider(create: (_) => ManageModeCubit()),
         ],
         child: BlocBuilder<SettingsCubit, SettingsState>(
@@ -62,7 +81,7 @@ class AtelierApp extends StatelessWidget {
                 theme: AtelierTheme.light(),
                 darkTheme: AtelierTheme.dark(),
                 themeMode: state.settings.themeMode,
-                routerConfig: AtelierRouter.build(),
+                routerConfig: _router,
               ),
             );
           },

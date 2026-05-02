@@ -40,6 +40,14 @@ class _HomeEmptyStateActionState extends State<HomeEmptyStateAction> {
     });
   }
 
+  void _startEditing() {
+    setState(() => _editing = true);
+    // Request focus on the next frame, after the TextField has mounted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _editing) _focusNode.requestFocus();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
@@ -50,7 +58,6 @@ class _HomeEmptyStateActionState extends State<HomeEmptyStateAction> {
         child: TextField(
           controller: _controller,
           focusNode: _focusNode,
-          autofocus: true,
           textAlign: TextAlign.center,
           style: AtelierTypography.monoLabel.copyWith(color: c.ink),
           decoration: InputDecoration(
@@ -80,7 +87,7 @@ class _HomeEmptyStateActionState extends State<HomeEmptyStateAction> {
     }
 
     return GestureDetector(
-      onTap: () => setState(() => _editing = true),
+      onTap: _startEditing,
       child: Container(
         padding: const EdgeInsets.symmetric(
           vertical: AtelierSpacing.xl, // 12≈14

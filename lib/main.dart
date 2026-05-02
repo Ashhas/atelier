@@ -16,10 +16,7 @@ class _PreviewApp extends StatelessWidget {
       darkTheme: AtelierTheme.dark(),
       home: Scaffold(
         body: Center(
-          child: Text(
-            'Atelier',
-            style: AtelierTypography.serifDisplay,
-          ),
+          child: Text('Atelier', style: AtelierTypography.serifDisplay),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state_action.dart';
 import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state_body.dart';
+import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state_brand.dart';
 import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state_eyebrow.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
@@ -31,6 +32,8 @@ class HomeEmptyState extends StatelessWidget {
         child: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            HomeEmptyStateBrand(),
+            SizedBox(height: AtelierSpacing.x2l), // 16
             HomeEmptyStateEyebrow(),
             SizedBox(height: AtelierSpacing.xl), // 14
             HomeEmptyStateBody(),

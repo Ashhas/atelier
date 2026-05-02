@@ -4,27 +4,31 @@ import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
 import 'package:flutter/material.dart';
 
-/// Shows 2026 year-goal preview inside a pocket card.
+/// Shows the year-goal preview inside a pocket card.
 ///
 /// Prototype: dashed border-bottom 1px rule, padding 0 4px 6px,
 /// year label fontSize 8 mono uppercase letterSpacing 1.6,
 /// year-goal titles Fraunces italic 12 color sub, ellipsis on overflow.
-/// Shows up to 2 expanded year-goal titles; if none shows "no 2026 goal".
+/// Shows up to 2 expanded year-goal titles; if none shows "no `YYYY` goal".
+/// The displayed year reads from [now] (defaults to the system clock).
 class PocketYearPreview extends StatelessWidget {
   const PocketYearPreview({
     super.key,
     required this.yearGoalCount,
     required this.expandedYearGoals,
     required this.collapsedCount,
+    this.now,
   });
 
   final int yearGoalCount;
   final List<YearGoal> expandedYearGoals;
   final int collapsedCount;
+  final DateTime? now;
 
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    final year = (now ?? DateTime.now()).year;
     final visible = expandedYearGoals.take(2).toList();
     final overflowCount = expandedYearGoals.length > 2
         ? expandedYearGoals.length - 2
@@ -52,7 +56,7 @@ class PocketYearPreview extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '2026',
+                '$year',
                 style: AtelierTypography.monoMicro.copyWith(
                   color: c.mute,
                   fontSize: 8,
@@ -77,7 +81,7 @@ class PocketYearPreview extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: AtelierSpacing.sm),
               child: Text(
-                'NO 2026 GOAL',
+                'NO $year GOAL',
                 style: AtelierTypography.monoMicro.copyWith(
                   color: c.mute,
                   letterSpacing: 1.4,

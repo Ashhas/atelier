@@ -24,7 +24,7 @@ void main() {
 
   tearDown(() async => db.close());
 
-  Goal _g(String id, String catId, {bool starred = false, DateTime? addedAt}) =>
+  Goal g(String id, String catId, {bool starred = false, DateTime? addedAt}) =>
       Goal(
         id: id,
         goalCategoryId: catId,
@@ -34,28 +34,28 @@ void main() {
       );
 
   test('add + byCategory returns matching rows only', () async {
-    await repo.add(_g('1', 'cat-a'));
-    await repo.add(_g('2', 'cat-b'));
+    await repo.add(g('1', 'cat-a'));
+    await repo.add(g('2', 'cat-b'));
     final rowsA = await repo.byCategory('cat-a');
-    expect(rowsA.map((g) => g.id), ['1']);
+    expect(rowsA.map((e) => e.id), ['1']);
   });
 
   test('byCategory sorts starred-first, then by addedAt ascending', () async {
-    await repo.add(_g('1', 'cat-a', addedAt: DateTime.utc(2026, 5, 1)));
+    await repo.add(g('1', 'cat-a', addedAt: DateTime.utc(2026, 5, 1)));
     await repo.add(
-      _g('2', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 3)),
+      g('2', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 3)),
     );
-    await repo.add(_g('3', 'cat-a', addedAt: DateTime.utc(2026, 5, 2)));
+    await repo.add(g('3', 'cat-a', addedAt: DateTime.utc(2026, 5, 2)));
     await repo.add(
-      _g('4', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 1)),
+      g('4', 'cat-a', starred: true, addedAt: DateTime.utc(2026, 5, 1)),
     );
 
     final ordered = await repo.byCategory('cat-a');
-    expect(ordered.map((g) => g.id).toList(), ['4', '2', '1', '3']);
+    expect(ordered.map((e) => e.id).toList(), ['4', '2', '1', '3']);
   });
 
   test('update changes title + starred', () async {
-    await repo.add(_g('1', 'cat-a'));
+    await repo.add(g('1', 'cat-a'));
     final updated = (await repo.byCategory(
       'cat-a',
     )).single.copyWith(title: 'Renamed', starred: true);
@@ -65,21 +65,21 @@ void main() {
   });
 
   test('delete removes the goal', () async {
-    await repo.add(_g('1', 'cat-a'));
+    await repo.add(g('1', 'cat-a'));
     await repo.delete('1');
     expect(await repo.byCategory('cat-a'), isEmpty);
   });
 
   test('cascade delete: removing the category drops its goals', () async {
-    await repo.add(_g('1', 'cat-a'));
-    await repo.add(_g('2', 'cat-b'));
+    await repo.add(g('1', 'cat-a'));
+    await repo.add(g('2', 'cat-b'));
     await categories.delete('cat-a');
     expect(await repo.all(), hasLength(1));
     expect((await repo.all()).single.id, '2');
   });
 
   test('clear removes everything', () async {
-    await repo.add(_g('1', 'cat-a'));
+    await repo.add(g('1', 'cat-a'));
     await repo.clear();
     expect(await repo.all(), isEmpty);
   });

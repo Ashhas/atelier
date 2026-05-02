@@ -205,6 +205,45 @@ class AtelierColors {
 
 Font scale wraps the app subtree in a `MediaQuery` override of `textScaler` (S=0.92, M=1.0, L=1.10).
 
+### Spacing & radii tokens
+
+`theme/atelier_spacing.dart` exports two T-shirt-scale token classes. The base-2 scale is small on purpose — when the design needs an in-between value, express it as a **sum of base tokens** (`base + md`, `xl + sm`) rather than introducing a new named step. This keeps the scale tight and forces every value onto recognisable building blocks.
+
+```dart
+class AtelierSpacing {
+  static const double xs   = 2;    // hairline (e.g. label-to-value vertical nudge)
+  static const double sm   = 4;    // tight inner padding (chip row internals)
+  static const double md   = 6;    // default sibling gap inside cards
+  static const double base = 8;    // standard gutter (grid gap, default vertical gap)
+  static const double lg   = 10;   // pocket inner padding, chip vertical padding
+  static const double xl   = 14;   // section gap, top-bar bottom margin
+  static const double x2l  = 16;   // banner inner padding, settings-row padding
+  static const double x3l  = 22;   // screen horizontal inset
+  static const double x4l  = 28;   // empty-state vertical padding
+}
+
+class AtelierRadii {
+  static const double sm    = 6;     // small action button corner
+  static const double md    = 8;     // goal chip
+  static const double lg    = 10;    // collapsed year banner
+  static const double xl    = 12;    // expanded goal row
+  static const double x2l   = 14;    // pocket card, expanded year banner
+  static const double sheet = 22;    // settings bottom-sheet top corners
+  static const double pill  = 999;   // segmented control, done pill, settings reset
+}
+```
+
+**Sums for in-between values:**
+
+| Pixels in design | Token expression |
+|---|---|
+| 12 | `base + sm` |
+| 18 | `xl + sm` |
+| 20 | `xl + md` |
+| 24 | `2 * x2l` (or `xl + lg`) |
+
+**Out of scope for these tokens:** font sizes (live in `AtelierTypography`), and one-off chrome dimensions like the simulated phone status-bar height (those stay as inline literals in the single widget that owns them).
+
 ## 7. Screens & components
 
 ### Coding rules (apply to every file in this project)
@@ -278,6 +317,7 @@ atelier/
       atelier_palette.dart                   # AtelierPalette type
       atelier_colors.dart                    # light + dark palette constants
       atelier_typography.dart                # TextStyle tokens — Fraunces / Inter / JetBrains Mono
+      atelier_spacing.dart                   # AtelierSpacing + AtelierRadii T-shirt token scales
       atelier_theme.dart                     # ThemeData builders for light + dark
 
     domain/
@@ -478,7 +518,7 @@ config ──▶ data ──▶ domain ◀── services ◀── presentation
 
 ## 12. Build sequence (rough)
 
-1. Theme + typography tokens + base widgets (`Segmented` / `SegmentedOption` only — typography is plain `TextStyle` constants, no custom text widgets)
+1. Theme tokens (palette, typography, spacing, radii) + base widgets (`Segmented` / `SegmentedOption` only — typography is plain `TextStyle` constants, no custom text widgets)
 2. Domain layer: `domain/models/` (plain data classes) + `domain/repositories/` (abstract contracts)
 3. Data layer: `data/drift/` (schema — database root + tables) + `data/repositories/` (Drift impls + prefs impl); no seeding (first launch is empty)
 4. SharedPreferences settings repo

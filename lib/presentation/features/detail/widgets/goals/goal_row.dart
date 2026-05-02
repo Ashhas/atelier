@@ -70,7 +70,9 @@ class _GoalRowState extends State<GoalRow> {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: _isEditing ? AtelierSpacing.base + AtelierSpacing.sm : x2l,
+        vertical: _isEditing
+            ? AtelierSpacing.base + AtelierSpacing.sm
+            : AtelierSpacing.x2l,
         horizontal: AtelierSpacing.xl,
       ),
       decoration: BoxDecoration(
@@ -129,6 +131,3 @@ class _GoalRowState extends State<GoalRow> {
     );
   }
 }
-
-// Convenience constant for double padding from tokens
-const double x2l = AtelierSpacing.x2l;

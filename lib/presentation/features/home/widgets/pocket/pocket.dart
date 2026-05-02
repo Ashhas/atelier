@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/domain/models/year_goal.dart';
@@ -59,8 +61,9 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
       duration: const Duration(milliseconds: 150),
     );
     _wiggleAngle = Tween<double>(
-      begin: -0.5 * 3.14159265 / 180,
-      end: 0.5 * 3.14159265 / 180,
+      // ±0.5 degrees in radians.
+      begin: -0.5 * math.pi / 180,
+      end: 0.5 * math.pi / 180,
     ).animate(_wiggle);
 
     if (widget.isManaging) _startWiggle();

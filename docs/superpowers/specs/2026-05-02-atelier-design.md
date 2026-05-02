@@ -80,13 +80,13 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 │  Pocket, GoalRow, YearBanner, TickStrip,         │
 │  AddBar, Segmented, MonoLabel, SerifTitle        │
 └──────────────────┬───────────────────────────────┘
-                   │ ref.watch / ref.read
+                   │ context.read / BlocBuilder / BlocSelector
 ┌──────────────────▼───────────────────────────────┐
-│  Riverpod providers                              │
-│  themeProvider, fontScaleProvider                │
-│  areasProvider, goalsProvider, yearGoalsProvider │
+│  Cubits (flutter_bloc, no events — methods only) │
+│  AreasCubit, GoalsCubit, YearGoalsCubit,         │
+│  SettingsCubit, ManageModeCubit (UI-only)        │
 └──────────────────┬───────────────────────────────┘
-                   │ injects
+                   │ injects via constructor (DI at app root)
 ┌──────────────────▼───────────────────────────────┐
 │  Repository interfaces (abstract)                │
 │  GoalRepository, AreaRepository,                 │
@@ -94,8 +94,8 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 └──────────────────┬───────────────────────────────┘
                    │ implemented by
 ┌──────────────────▼───────────────────────────────┐
-│  HiveGoalRepository, HiveAreaRepository,         │
-│  HiveYearGoalRepository, PrefsSettingsRepository │
+│  DriftGoalRepository, DriftAreaRepository,       │
+│  DriftYearGoalRepository, PrefsSettingsRepository│
 │  (future: SupabaseGoalRepository, etc.)          │
 └──────────────────────────────────────────────────┘
 ```
@@ -103,8 +103,10 @@ The chrome (header, tick strip, year-banner labels, days-left counter) reflects 
 **Key design choices:**
 
 - **Repository pattern** — `abstract class GoalRepository` defines `Future<List<Goal>> all()`, `add(Goal)`, `update(Goal)`, `delete(String id)`, etc. The Hive impl ships v1; a Supabase impl can drop in later by implementing the same interface.
-- **Riverpod over setState/Provider** — the prototype's giant `AtelierYear` component with 8 useState calls maps poorly to a single Flutter widget. Riverpod splits state into focused providers that widgets subscribe to selectively.
-- **Hive for goals/areas/year-goals** — fast, typed, offline. SharedPreferences for theme + font scale (small key/value).
+- **flutter_bloc with Cubits (no events)** — the prototype's giant `AtelierYear` component with 8 useState calls maps poorly to a single Flutter widget. Cubits split state into focused units that widgets subscribe to via `BlocBuilder` / `BlocSelector`. No event classes — Cubits expose plain methods (`addGoal`, `toggleStar`, `reorderArea`) that emit new state. Equivalent reactive model, less boilerplate than full Bloc.
+- **State immutability** — each Cubit's state is an immutable class (`Equatable`-based) holding the slice it owns. Lists inside states are unmodifiable. `emit` always produces a new instance.
+- **DI at app root** — repositories are constructed once in `main.dart`, then injected into Cubits via `MultiBlocProvider` at the top of the widget tree. No service locator (`get_it` / `provider`) in v1.
+- **Drift (SQLite) for goals/areas/year-goals** — type-safe SQL with codegen, actively maintained, strong story for migrating to Supabase later (Supabase is Postgres; Drift's table definitions and queries map nearly one-for-one). Native ordering / filtering via SQL is a better fit than NoSQL hand-sorting for our starred-first + insertion-order requirement. SharedPreferences for theme + font scale (small key/value).
 - **UUID v4 string ids** — stable across devices in case of future sync.
 - **`go_router`** — two routes (`/`, `/area/:id`); built-in deep-link friendliness for later Android intent integration.
 - **`google_fonts`** — Fraunces (display, italic), Inter (sans, primary UI), JetBrains Mono (mono, all small-caps labels). Matches prototype's CDN imports.
@@ -183,45 +185,77 @@ Font scale wraps the app subtree in a `MediaQuery` override of `textScaler` (S=0
 
 ## 7. Screens & components
 
+### Coding rules (apply to every file in this project)
+
+- **One widget per file.** No private helper widgets, no nested widget classes, no inline `Builder` / `LayoutBuilder` definitions of named widgets. Every named widget — public *or* internal — gets its own file. The file name is the snake-case form of the widget class name (e.g. `pocket_year_preview.dart` → `class PocketYearPreview`).
+- **Files import widgets explicitly.** A screen composes by importing each child widget; no widget defines its children inline as new classes in the same file.
+- **Stateful → stateless split.** When a widget needs local UI state, it owns a `StatefulWidget` + `State` pair in the same file. Anything that's purely a view → `StatelessWidget`. State that crosses widgets → a Cubit.
+- **No anonymous functions defining UI structure beyond trivial.** A simple `IconButton(onPressed: () => cubit.toggle(...))` is fine. A `Builder` returning 30 lines of layout is not — extract it to its own file.
+
+
 ### Screens
 - `HomeScreen` — top bar (`{Month}` italic + year mono + days-left + settings gear), tick strip, 2-col pocket grid.
 - `DetailScreen` — top bar (back arrow + area title + count), year-banner stack, "THIS MONTH" header, goal list, floating add bar.
 - `SettingsSheet` — modal bottom sheet (theme, font scale, reset).
 
-### Reusable widgets
-- `Pocket` — single grid card. Renders top label + count, year preview (up to 2 visible expanded year goals + counts), then up to 3 month goals (starred styled distinctly) with "+N more" overflow. Long-press → `onLongPress` callback. Empty state for areas with no items, "Open · add" copy for the add slot.
-- `GoalRow` — star icon, serif title, days-since-added mono label. Tap → toggle expanded action row (Edit / Remove). Edit → inline text input with Save / Cancel.
-- `YearBanner` — compact (one-line italic) ↔ expanded (full italic title + × remove). Tap header → toggle.
-- `TickStrip` — paints ticks for current month with today highlight + label.
-- `AddBar` — segmented MONTH/YEAR switch + "+ Add to …" placeholder that becomes a TextField on tap.
-- `Segmented` — generic 2/3-option pill switch (used by AddBar, theme, font scale).
-- `MonoLabel`, `SerifTitle` — typography helpers.
+### Reusable widgets (each in its own file under the path implied by Section 11)
+
+- `Pocket` (`features/home/widgets/pocket.dart`) — single grid card. Composes `PocketHeader`, `PocketYearPreview`, `PocketGoalsPreview`, `PocketRemoveBadge`. Long-press → `onLongPress` callback.
+- `PocketHeader` (`pocket_header.dart`) — area label + count.
+- `PocketYearPreview` (`pocket_year_preview.dart`) — up to 2 visible 2026 year goals + dashed divider, or "no 2026 goal" empty state.
+- `PocketGoalsPreview` (`pocket_goals_preview.dart`) — up to 3 month goals (starred chip vs normal chip) + "+N more" overflow, or "Empty" / "Open · add" empty states.
+- `PocketRemoveBadge` (`pocket_remove_badge.dart`) — the × shown in manage mode.
+- `GoalRow` (`features/detail/widgets/goal_row.dart`) — star icon, serif title, days-since-added mono label. Tap → toggle expanded action row.
+- `GoalRowActions` (`goal_row_actions.dart`) — Edit / Remove buttons, shown when row is expanded.
+- `GoalRowEditor` (`goal_row_editor.dart`) — inline text input with Save / Cancel, shown when row is being edited.
+- `YearBanner` (`features/detail/widgets/year_banner.dart`) — compact (one-line italic) ↔ expanded (full italic title + × remove).
+- `YearBannerCollapsed` (`year_banner_collapsed.dart`) — the compact form.
+- `YearBannerExpanded` (`year_banner_expanded.dart`) — the expanded form.
+- `TickStrip` (`features/home/widgets/tick_strip.dart`) — composes `TickStripBaseline` + `TickStripTickMark` (one per day) + `TickStripTodayLabel`.
+- `TickStripTickMark` (`tick_strip_tick_mark.dart`) — single tick (today / major / minor variants).
+- `TickStripTodayLabel` (`tick_strip_today_label.dart`) — `D{n} · {pct}%` mono label above today's tick.
+- `AddBar` (`features/detail/widgets/add_bar.dart`) — composes `AddBarSwitch` + `AddBarInput` / `AddBarPlaceholder`.
+- `AddBarSwitch` (`add_bar_switch.dart`) — 2-option MONTH/YEAR pill (uses `Segmented`).
+- `AddBarInput` (`add_bar_input.dart`) — TextField in active state.
+- `AddBarPlaceholder` (`add_bar_placeholder.dart`) — "+ Add to …" tap target.
+- `Segmented` (`widgets/segmented.dart`) — generic 2/3-option pill switch (used by AddBarSwitch, ThemeSelector, FontScaleSelector).
+- `SegmentedOption` (`segmented_option.dart`) — single option button.
+- `MonoLabel` (`widgets/mono_label.dart`) — JetBrains Mono small-caps label.
+- `SerifTitle` (`widgets/serif_title.dart`) — Fraunces italic title.
+- `HomeTopBar` (`features/home/widgets/home_top_bar.dart`) — month name + year + days-left + settings gear / Done pill.
+- `DetailTopBar` (`features/detail/widgets/detail_top_bar.dart`) — back arrow + area title + count.
+- `ThemeSelector` (`features/settings/widgets/theme_selector.dart`) — Light / Dark segmented.
+- `FontScaleSelector` (`features/settings/widgets/font_scale_selector.dart`) — S / M / L segmented.
+- `ResetDataButton` (`features/settings/widgets/reset_data_button.dart`) — two-step destructive button.
+- `SettingsBackdrop` (`features/settings/widgets/settings_backdrop.dart`) — dimmed tap-to-dismiss backdrop.
+- `SettingsHandle` (`features/settings/widgets/settings_handle.dart`) — the small drag handle at the top of the sheet.
 
 ## 8. Interactions / data flow
 
-- **Add goal:** detail screen tap "+ Add" → input opens → Enter or blur with content → `goalsProvider.add(...)` → repo persist → list refreshes (sorted starred-first then insertion).
-- **Toggle star:** tap star icon → `goalsProvider.toggleStar(id)` → re-sort → re-render.
-- **Reorder pockets:** manage mode + drag → `ReorderableGridView` calls `areasProvider.reorder(from, to)` → bulk update of `order` → persist.
-- **Remove area:** manage × → `areasProvider.remove(areaId)` → cascade-delete goals + year-goals in a single Hive transaction.
-- **Year-banner toggle:** tap → `yearGoalsProvider.toggleExpand(id)` → persist.
-- **Theme / font scale:** segmented tap → `settingsProvider.set(...)` → SharedPreferences write-through → MaterialApp rebuilds with new theme.
-- **Reset:** confirm → clear all Hive boxes + prefs → re-seed default areas → return to home.
+- **Add goal:** detail screen tap "+ Add" → input opens → Enter or blur with content → `context.read<GoalsCubit>().add(...)` → repo persist → Cubit emits new state → list refreshes (sorted starred-first then insertion).
+- **Toggle star:** tap star icon → `GoalsCubit.toggleStar(id)` → re-sort → emit → re-render.
+- **Reorder pockets:** manage mode + drag → `ReorderableGridView` calls `AreasCubit.reorder(from, to)` → bulk update of `order` → persist → emit.
+- **Remove area:** manage × → `AreasCubit.remove(areaId)` triggers a transactional cascade that also calls into `GoalsCubit` and `YearGoalsCubit` to drop their entries (or, simpler, repos cascade and all three cubits reload from disk after the call).
+- **Year-banner toggle:** tap → `YearGoalsCubit.toggleExpand(id)` → persist → emit.
+- **Theme / font scale:** segmented tap → `SettingsCubit.setTheme(...)` / `setFontScale(...)` → SharedPreferences write-through → emit → `BlocBuilder` at the `MaterialApp.router` level rebuilds with new `ThemeData`.
+- **Reset:** confirm → all Drift tables truncated + re-seeded + prefs cleared → all cubits `reload()` → emit fresh states → home re-renders.
+- **Manage mode:** `ManageModeCubit` is a tiny UI-only cubit holding `bool isManaging` (and optionally drag state). HomeScreen reads it via `BlocBuilder`. Long-press → `enter()`, tap-outside / Done → `exit()`. Not persisted.
 
 ## 9. Error handling & edge cases
 
-- **First launch:** Hive boxes empty → seed 8 default areas (Work, Body, Mind, Skill, Daily, Play, Life, Open) with order 0..7. No sample goals.
+- **First launch:** Drift `areas` table empty → seed 8 default areas (Work, Body, Mind, Skill, Daily, Play, Life, Open) with order 0..7. No sample goals.
 - **Empty pocket:** "Empty" placeholder (or "Open · add" for the add slot).
 - **Empty detail:** dashed "No year goal yet for {area}" + "Nothing this month yet".
 - **Empty input:** discarded silently.
-- **Hive write failure:** SnackBar with retry; in-memory state preserved so the app stays usable. App reads through cache provider that updates on write success.
-- **Cascade delete safety:** wrapped in a single `Future` that completes only after all 3 box ops succeed; on failure, full rollback (delete the in-progress changes from in-memory state).
+- **Drift write failure:** SnackBar with retry; Cubit state preserved so the app stays usable. Cubits reload from disk after any write to stay consistent.
+- **Cascade delete safety:** wrapped in a Drift `transaction { }` block — area + its goals + its year-goals deleted atomically. On failure, the transaction rolls back at the DB level; cubits reload to clear any optimistic state.
 - **System theme override:** v1 ignores `MediaQuery.platformBrightness`; theme is user-chosen. Default = light (matches prototype's initial state).
 
 ## 10. Testing strategy
 
 - **Unit tests** — each repository: CRUD round-trip, order preservation, cascade delete on area removal, seed-on-empty idempotency, reset clears everything.
-- **Provider tests** — sort order (starred-first then insertion), reorder math, toggle-star, cascade delete propagation through providers.
-- **Widget tests** — Pocket renders preview correctly with starred items styled; manage-mode entry / exit / × cascade; tick strip computes today's position and label; settings sheet wires up to providers; detail add bar switches month↔year target.
+- **Cubit tests** — using `bloc_test`: sort order emitted on state change (starred-first then insertion), reorder math, toggle-star, cascade delete propagation across the three goal-related cubits, settings cubit emits on theme/font-scale change, manage-mode cubit toggles correctly.
+- **Widget tests** — Pocket renders preview correctly with starred items styled; manage-mode entry / exit / × cascade; tick strip computes today's position and label; settings sheet wires up to cubits; detail add bar switches month↔year target. Use `BlocProvider.value` with mock cubits in tests.
 - **Golden tests** — light + dark renders of HomeScreen and DetailScreen at fixed phone dimensions to catch palette / typography regressions.
 - **Excluded from v1** — integration tests; covered by golden + widget tests across providers.
 
@@ -248,20 +282,33 @@ atelier/
         goal_repository.dart
         year_goal_repository.dart
         settings_repository.dart
-      hive/
-        hive_area_repository.dart
-        hive_goal_repository.dart
-        hive_year_goal_repository.dart
+      drift/
+        atelier_database.dart            # @DriftDatabase root
+        tables/
+          areas_table.dart
+          goals_table.dart
+          year_goals_table.dart
+        drift_area_repository.dart
+        drift_goal_repository.dart
+        drift_year_goal_repository.dart
+      prefs/
         prefs_settings_repository.dart
-        boxes.dart                       # box names + init
-        adapters.dart                    # TypeAdapters
       seed.dart                          # default-areas seeding
-    state/
-      providers.dart                     # repo provider injection
-      areas_provider.dart
-      goals_provider.dart
-      year_goals_provider.dart
-      settings_provider.dart
+    cubits/
+      areas/
+        areas_cubit.dart
+        areas_state.dart
+      goals/
+        goals_cubit.dart
+        goals_state.dart
+      year_goals/
+        year_goals_cubit.dart
+        year_goals_state.dart
+      settings/
+        settings_cubit.dart
+        settings_state.dart
+      manage_mode/
+        manage_mode_cubit.dart           # UI-only state, not persisted
     features/
       home/
         home_screen.dart
@@ -283,7 +330,7 @@ atelier/
       serif_title.dart
   test/
     repositories/
-    providers/
+    cubits/
     widgets/
     golden/
   docs/
@@ -295,9 +342,9 @@ atelier/
 
 1. Theme + typography + base widgets (Segmented, MonoLabel, SerifTitle)
 2. Domain models + repository interfaces
-3. Hive setup (adapters, boxes, init) + Hive impls + seed-on-empty
+3. Drift setup (tables, codegen, database root) + Drift impls + seed-on-empty
 4. SharedPreferences settings repo
-5. Riverpod providers wired to repos
+5. Cubits + states wired to repos, registered via `MultiBlocProvider` at app root
 6. HomeScreen scaffold + TickStrip + Pocket (read-only first)
 7. DetailScreen scaffold + YearBanner + GoalRow + AddBar
 8. SettingsSheet
@@ -308,7 +355,7 @@ The detailed breakdown lives in the implementation plan (next document).
 
 ## 13. Future considerations (deferred, noted for context)
 
-- **Supabase sync** — implement `Supabase{Goal,Area,YearGoal}Repository` against the same interfaces; swap providers via a runtime flag or build flavour.
+- **Supabase sync** — implement `Supabase{Goal,Area,YearGoal}Repository` against the same interfaces; swap which impl is constructed in `main.dart` based on a build flavour or runtime flag. Cubits don't change.
 - **Focused mode** — global "starred only" view across pockets.
 - **Month override (debug)** — hidden setting to override `DateTime.now()` for testing chrome rollover.
 - **Notifications / reminders** — opt-in, per-goal.

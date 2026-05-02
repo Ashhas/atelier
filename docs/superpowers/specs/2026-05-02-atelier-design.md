@@ -265,7 +265,7 @@ The full widget breakdown lives in the project layout (Section 11). Roles in bri
 
 ## 11. Project layout
 
-Patterned after the in-house `Plastic-Avengers-Flutter` project (`lib/ui/{features,common}`, `lib/services`, `lib/models`, `lib/theme`, cubits inside the feature in a `state/` folder, widgets nested by purpose).
+Three top-level layers (`domain/`, `data/`, `presentation/`) plus `config/`, `theme/`, `services/`, `utils/`. Cubits live in `state/` inside the feature that owns them, and are provided at the app-shell level for cross-feature access — patterned after the Plastic-Avengers convention of feature-scoped state with shell-level provision.
 
 ```
 atelier/
@@ -316,12 +316,12 @@ atelier/
     presentation/
       features/
         home/
-          home_container.dart                # creates cubits, hosts BlocProvider, builds HomeScreen
+          home_container.dart                # builds HomeScreen; reads cubits from app-shell BlocProvider
           home_screen.dart                   # pure UI, reads via BlocBuilder
           state/
-            home_cubit.dart                  # composes GoalCategories + Goals + YearGoals reads
-            home_state.dart
-            manage_mode_cubit.dart           # UI-only manage mode state
+            goal_categories_cubit.dart       # owns the goal-categories list (CRUD + reorder).
+            goal_categories_state.dart       # provided at app-shell level; consumed by home + detail + settings.
+            manage_mode_cubit.dart           # UI-only manage-mode state (home-only)
             manage_mode_state.dart
           widgets/
             top_bar/
@@ -349,11 +349,13 @@ atelier/
               home_empty_state_body.dart
               home_empty_state_action.dart
         detail/
-          detail_container.dart
+          detail_container.dart              # builds DetailScreen; reads cubits from app-shell BlocProvider
           detail_screen.dart
           state/
-            detail_cubit.dart
-            detail_state.dart
+            goals_cubit.dart                 # owns the goals list (CRUD + star + sort).
+            goals_state.dart                 # provided at app-shell level; consumed by home (preview) + detail (full list).
+            year_goals_cubit.dart            # owns year goals (CRUD + expand toggle).
+            year_goals_state.dart            # provided at app-shell level; consumed by home (preview) + detail (banners).
           widgets/
             top_bar/
               detail_top_bar.dart
@@ -389,16 +391,6 @@ atelier/
             font_scale_selector.dart
             reset_data_button.dart
             reset_data_confirm.dart
-        cubits/                              # app-wide cubits (not feature-scoped)
-          goal_categories/
-            goal_categories_cubit.dart       # global goal-categories list (CRUD + reorder)
-            goal_categories_state.dart
-          goals/
-            goals_cubit.dart                 # global goals list (CRUD + sort)
-            goals_state.dart
-          year_goals/
-            year_goals_cubit.dart
-            year_goals_state.dart
       common/                                # shared UI atoms
         segmented/
           segmented.dart
@@ -468,8 +460,13 @@ config ──▶ data ──▶ domain ◀── services ◀── presentation
 
 **Presentation conventions:**
 
-- Each feature has a `<feature>_container.dart` (the wiring point — creates cubits, hosts `BlocProvider`) + `<feature>_screen.dart` (pure UI that reads from cubits via `BlocBuilder` / `BlocSelector`). This split keeps containers thin and screens unit-testable in isolation.
-- Cubits live in `state/` inside their owning feature when feature-scoped (e.g. `home_cubit`, `manage_mode_cubit`), or in `presentation/features/cubits/` when app-wide (goal-categories, goals, year-goals are shared across home + detail + settings).
+- Each feature has a `<feature>_container.dart` (the wiring point — reads cubits from the app-shell `BlocProvider`, builds the screen) + `<feature>_screen.dart` (pure UI that reads from cubits via `BlocBuilder` / `BlocSelector`). This split keeps containers thin and screens unit-testable in isolation.
+- **All cubits live in `state/` inside the feature that primarily owns them**, even when other features also read them. Following the Plastic-Avengers convention: shared cubits stay feature-scoped on disk and are made available across the tree by being provided at the app-shell level (`config/atelier_app.dart`) via `MultiBlocProvider`. Other features reach them with `context.read<X>()` or `BlocBuilder<X, _>`.
+- Ownership rules:
+  - `home/state/goal_categories_cubit.dart` — home is the primary mutator (manage-mode reorder/remove, plus the add-pocket flow on the empty state and `Open` slot). Detail and settings read it.
+  - `detail/state/goals_cubit.dart` and `detail/state/year_goals_cubit.dart` — detail is where these are added, edited, starred, removed, expanded/collapsed. Home reads them for the pocket previews; settings writes to them on reset.
+  - `home/state/manage_mode_cubit.dart` — UI-only state, used only by home. Stays feature-local in scope as well as on disk.
+  - `settings/state/settings_cubit.dart` — settings owns it; the app shell reads it to drive `MaterialApp.theme` selection.
 - Widgets nest by purpose subgroup (`widgets/top_bar/`, `widgets/pocket/`, `widgets/year_banner/`, `widgets/empty_state/`) so file lists stay short and intent-readable.
 - `presentation/common/` holds shared UI atoms grouped by kind (`segmented/`, `text/`).
 - One widget per file, every named widget gets its own file (see §7 coding rules).

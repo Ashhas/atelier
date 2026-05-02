@@ -1,0 +1,66 @@
+import 'package:atelier/presentation/features/home/state/goal_categories_cubit.dart';
+import 'package:atelier/presentation/features/home/state/goal_categories_state.dart';
+import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart';
+import 'package:atelier/presentation/features/home/state/manage_mode_state.dart';
+import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state.dart';
+import 'package:atelier/presentation/features/home/widgets/grid/pocket_grid.dart';
+import 'package:atelier/presentation/features/home/widgets/top_bar/home_top_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+/// Main home screen: top bar + tick strip + pocket grid, OR empty state.
+///
+/// Chrome (HomeTopBar with TickStrip) is always visible (spec §3.9).
+/// Tap outside any pocket while in manage mode exits manage mode (spec §3.6).
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GoalCategoriesCubit, GoalCategoriesState>(
+      builder: (context, catState) {
+        return BlocBuilder<ManageModeCubit, ManageModeState>(
+          builder: (context, manageState) {
+            final isManaging = manageState.isManaging;
+            final isEmpty = catState.isEmpty;
+            final manageCubit = context.read<ManageModeCubit>();
+            final now = DateTime.now();
+
+            return Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              body: SafeArea(
+                child: GestureDetector(
+                  // Tap outside any pocket while managing exits manage mode
+                  behavior: HitTestBehavior.translucent,
+                  onTap: isManaging ? manageCubit.exit : null,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Chrome (top bar + tick strip) always visible
+                      HomeTopBar(
+                        now: now,
+                        isManaging: isManaging,
+                        onSettings: () {
+                          // Settings sheet — wired up later
+                        },
+                        onDone: manageCubit.exit,
+                      ),
+                      // Grid or empty state
+                      Expanded(
+                        child: isEmpty
+                            ? const SingleChildScrollView(
+                                child: HomeEmptyState(),
+                              )
+                            : const SingleChildScrollView(child: PocketGrid()),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}

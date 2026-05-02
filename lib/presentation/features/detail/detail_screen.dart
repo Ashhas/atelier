@@ -37,8 +37,6 @@ class DetailScreen extends StatelessWidget {
 
     final goals = goalsState.forCategory(goalCategoryId);
     final yearGoals = yearGoalsState.forCategory(goalCategoryId);
-    // spec says: 0 or 1 year goals; if multiple, show the first
-    final yearGoal = yearGoals.isEmpty ? null : yearGoals.first;
 
     return Scaffold(
       backgroundColor: p.bg,
@@ -59,13 +57,28 @@ class DetailScreen extends StatelessWidget {
                   bottom: AtelierSpacing.x4l,
                 ),
                 children: [
-                  YearBanner(
-                    yearGoal: yearGoal,
-                    categoryName: categoryName,
-                    onToggle: (id) =>
-                        context.read<YearGoalsCubit>().toggleExpanded(id),
-                    onDelete: (id) => context.read<YearGoalsCubit>().delete(id),
-                  ),
+                  if (yearGoals.isEmpty)
+                    YearBanner(
+                      yearGoal: null,
+                      categoryName: categoryName,
+                      onToggle: (id) =>
+                          context.read<YearGoalsCubit>().toggleExpanded(id),
+                      onDelete: (id) =>
+                          context.read<YearGoalsCubit>().delete(id),
+                    )
+                  else
+                    for (final yg in yearGoals) ...[
+                      YearBanner(
+                        key: ValueKey(yg.id),
+                        yearGoal: yg,
+                        categoryName: categoryName,
+                        onToggle: (id) =>
+                            context.read<YearGoalsCubit>().toggleExpanded(id),
+                        onDelete: (id) =>
+                            context.read<YearGoalsCubit>().delete(id),
+                      ),
+                      const SizedBox(height: AtelierSpacing.base),
+                    ],
                   const SizedBox(height: AtelierSpacing.xl + AtelierSpacing.md),
                   const DetailSectionHeader(),
                   if (goals.isEmpty)

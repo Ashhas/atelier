@@ -108,24 +108,33 @@ class PocketGrid extends StatelessWidget {
       },
       children: [
         for (final category in visibleCategories)
-          Pocket(
-            key: ValueKey(category.id),
-            category: category,
-            yearGoalCount: yearGoalsState.forCategory(category.id).length,
-            goalsPreview: goalsState.forCategory(category.id),
-            isManaging: isManaging && !category.isAddSlot,
-            onTap: () {
-              if (category.isAddSlot) {
-                _showAddPocketSheet(context, categoriesCubit);
-              } else {
-                context.push('/pocket/${category.id}');
-              }
-            },
-            onRemove: () => categoriesCubit.removePocket(category.id),
-            onLongPress: () {
-              if (!category.isAddSlot) manageCubit.enter();
-            },
-          ),
+          () {
+            final pocketYearGoals = yearGoalsState.forCategory(category.id);
+            final expanded = pocketYearGoals
+                .where((y) => y.expanded)
+                .toList(growable: false);
+            final collapsed = pocketYearGoals.length - expanded.length;
+            return Pocket(
+              key: ValueKey(category.id),
+              category: category,
+              yearGoalCount: pocketYearGoals.length,
+              goalsPreview: goalsState.forCategory(category.id),
+              expandedYearGoals: expanded,
+              collapsedYearCount: collapsed,
+              isManaging: isManaging && !category.isAddSlot,
+              onTap: () {
+                if (category.isAddSlot) {
+                  _showAddPocketSheet(context, categoriesCubit);
+                } else {
+                  context.push('/pocket/${category.id}');
+                }
+              },
+              onRemove: () => categoriesCubit.removePocket(category.id),
+              onLongPress: () {
+                if (!category.isAddSlot) manageCubit.enter();
+              },
+            );
+          }(),
       ],
     );
   }

@@ -10,23 +10,14 @@ v1 — local-first, single user, Android + iOS. Persistence is on-device SQLite 
 
 ## Features
 
-- 2-column masonry grid of "pockets" (goal categories) with variable-height cards.
-- Per-pocket year goals (north stars) and month goals.
-- Star month goals to pin them to the top.
-- Inline rename / delete on every goal.
-- Manage mode: long-press a pocket to enter, drag to reorder, tap × to remove.
-- Settings sheet: theme (light / dark), font scale (small / medium / large), reset all data.
-- Dashed-border "Open" add-slot in the grid for adding new pockets.
-
-## Tech
-
-- Flutter 3.32, Dart 3.8
-- Drift 2.31 (SQLite + codegen)
-- flutter_bloc 9.1 cubits with manual `cubit.stream.listen` for tests
-- go_router 16.3
-- shared_preferences for settings persistence
-- google_fonts (Fraunces / Inter / JetBrains Mono)
-- flutter_staggered_grid_view for the masonry layout
+- **Pockets for what matters.** Group your goals into pockets — Work, Body, Mind, Side projects, whatever. Each pocket holds your big goals for the year and your focus for the month, side by side.
+- **A north star and a path.** Set one or more year goals per pocket so you always remember the bigger why, then add the smaller monthly goals that get you there.
+- **Star what you're working on now.** Tap the star next to a goal to pin it to the top of its list, so the things you actually care about don't get lost in the pile.
+- **Tap to edit, tap to delete.** No menus, no modals. Tap a goal to expand it, edit the title in place, or remove it.
+- **Rearrange your home.** Long-press a pocket to enter manage mode — drag pockets into a new order, remove the ones you've outgrown, then tap anywhere outside to lock it back in.
+- **A month at a glance.** A subtle tick strip at the top of the home screen shows where you are in the month, so you can feel the time passing without checking a calendar.
+- **Looks the way you read.** Light and dark themes, plus three font sizes (small, medium, large) so the typography fits your eyes and your context.
+- **Yours, on your device.** Everything stays on your phone — no account, no sign-in, no cloud. One tap in settings clears every goal if you want a fresh start.
 
 ## Architecture
 

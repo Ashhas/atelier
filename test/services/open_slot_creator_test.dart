@@ -1,6 +1,5 @@
 import 'package:atelier/data/drift/atelier_database.dart';
 import 'package:atelier/data/repositories/drift_goal_category_repository.dart';
-import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/services/open_slot_creator.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';

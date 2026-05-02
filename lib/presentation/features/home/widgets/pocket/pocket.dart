@@ -1,6 +1,7 @@
 import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/domain/models/year_goal.dart';
+import 'package:atelier/presentation/features/home/widgets/pocket/pocket_dashed_border.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket_empty_state.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket_goals_preview.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket_header.dart';
@@ -104,34 +105,66 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Container(
-              constraints: const BoxConstraints(minHeight: 130),
-              decoration: BoxDecoration(
-                color: c.pocket,
-                border: Border.all(color: c.rule),
-                borderRadius: BorderRadius.circular(AtelierRadii.x2l),
-              ),
-              padding: const EdgeInsets.all(AtelierSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PocketHeader(
-                    name: widget.category.name,
-                    goalCount: widget.goalsPreview.length,
+            // Add-slot pocket gets a dashed border + transparent fill so it
+            // reads as "tap to add" rather than "real content"; everything
+            // else uses the normal solid border + pocket fill.
+            if (isAddSlot)
+              PocketDashedBorder(
+                color: c.rule,
+                radius: AtelierRadii.x2l,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 130),
+                  padding: const EdgeInsets.all(AtelierSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PocketHeader(
+                        name: widget.category.name,
+                        goalCount: widget.goalsPreview.length,
+                      ),
+                      PocketYearPreview(
+                        yearGoalCount: widget.yearGoalCount,
+                        expandedYearGoals: widget.expandedYearGoals,
+                        collapsedCount: widget.collapsedYearCount,
+                      ),
+                      const SizedBox(height: AtelierSpacing.md),
+                      if (isEmpty)
+                        PocketEmptyState(isAddSlot: isAddSlot)
+                      else
+                        PocketGoalsPreview(goals: widget.goalsPreview),
+                    ],
                   ),
-                  PocketYearPreview(
-                    yearGoalCount: widget.yearGoalCount,
-                    expandedYearGoals: widget.expandedYearGoals,
-                    collapsedCount: widget.collapsedYearCount,
-                  ),
-                  const SizedBox(height: AtelierSpacing.md),
-                  if (isEmpty)
-                    PocketEmptyState(isAddSlot: isAddSlot)
-                  else
-                    PocketGoalsPreview(goals: widget.goalsPreview),
-                ],
+                ),
+              )
+            else
+              Container(
+                constraints: const BoxConstraints(minHeight: 130),
+                decoration: BoxDecoration(
+                  color: c.pocket,
+                  border: Border.all(color: c.rule),
+                  borderRadius: BorderRadius.circular(AtelierRadii.x2l),
+                ),
+                padding: const EdgeInsets.all(AtelierSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PocketHeader(
+                      name: widget.category.name,
+                      goalCount: widget.goalsPreview.length,
+                    ),
+                    PocketYearPreview(
+                      yearGoalCount: widget.yearGoalCount,
+                      expandedYearGoals: widget.expandedYearGoals,
+                      collapsedCount: widget.collapsedYearCount,
+                    ),
+                    const SizedBox(height: AtelierSpacing.md),
+                    if (isEmpty)
+                      PocketEmptyState(isAddSlot: isAddSlot)
+                    else
+                      PocketGoalsPreview(goals: widget.goalsPreview),
+                  ],
+                ),
               ),
-            ),
             // × remove badge at top-left in manage mode
             if (widget.isManaging && !isAddSlot)
               Positioned(

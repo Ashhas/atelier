@@ -35,7 +35,7 @@ class TickStripTodayLabel extends StatelessWidget {
               style: TextStyle(color: p.ink, fontWeight: FontWeight.w600),
             ),
             TextSpan(
-              text: '  · $_percent%',
+              text: ' · $_percent%',
               style: TextStyle(color: p.mute, fontWeight: FontWeight.w500),
             ),
           ],

@@ -53,65 +53,71 @@ class _HomeEmptyStateActionState extends State<HomeEmptyStateAction> {
     final c = AtelierTheme.paletteOf(context);
 
     if (_editing) {
-      return ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                textAlign: TextAlign.center,
-                style: AtelierTypography.monoLabel.copyWith(color: c.ink),
-                decoration: InputDecoration(
-                  hintText: 'New pocket name…',
-                  hintStyle: AtelierTypography.monoLabel.copyWith(
-                    color: c.mute,
+      // Padding so the editing row never touches the empty-state's dashed
+      // border on small screens; ConstrainedBox keeps it from getting too
+      // wide on tablets.
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AtelierSpacing.x3l),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  textAlign: TextAlign.center,
+                  style: AtelierTypography.monoLabel.copyWith(color: c.ink),
+                  decoration: InputDecoration(
+                    hintText: 'New pocket name…',
+                    hintStyle: AtelierTypography.monoLabel.copyWith(
+                      color: c.mute,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AtelierRadii.pill),
+                      borderSide: BorderSide(color: c.rule),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AtelierRadii.pill),
+                      borderSide: BorderSide(color: c.rule),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AtelierRadii.pill),
+                      borderSide: BorderSide(color: c.ink),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: AtelierSpacing.xl,
+                      horizontal: AtelierSpacing.x2l + AtelierSpacing.xs, // 18
+                    ),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AtelierRadii.pill),
-                    borderSide: BorderSide(color: c.rule),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AtelierRadii.pill),
-                    borderSide: BorderSide(color: c.rule),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AtelierRadii.pill),
-                    borderSide: BorderSide(color: c.ink),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
+                ),
+              ),
+              const SizedBox(width: AtelierSpacing.base),
+              GestureDetector(
+                onTap: _submit,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
                     vertical: AtelierSpacing.xl,
-                    horizontal: AtelierSpacing.x2l + AtelierSpacing.xs, // 18
+                    horizontal: AtelierSpacing.x2l + AtelierSpacing.xs,
                   ),
-                ),
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _submit(),
-              ),
-            ),
-            const SizedBox(width: AtelierSpacing.base),
-            GestureDetector(
-              onTap: _submit,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AtelierSpacing.xl,
-                  horizontal: AtelierSpacing.x2l + AtelierSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: c.ink,
-                  borderRadius: BorderRadius.circular(AtelierRadii.pill),
-                ),
-                child: Text(
-                  'ADD',
-                  style: AtelierTypography.monoLabel.copyWith(
-                    color: c.bg,
-                    fontSize: 10,
+                  decoration: BoxDecoration(
+                    color: c.ink,
+                    borderRadius: BorderRadius.circular(AtelierRadii.pill),
+                  ),
+                  child: Text(
+                    'ADD',
+                    style: AtelierTypography.monoLabel.copyWith(
+                      color: c.bg,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

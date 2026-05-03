@@ -20,6 +20,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// App-wide scroll behavior that suppresses the Android Material overscroll
+/// glow + the iOS bouncing edge. The minimal Atelier visual language doesn't
+/// fit either — overscroll content briefly tints the scaffold colour green
+/// on Android because the indicator inherits the colorScheme accent.
+class _NoOverscrollBehavior extends MaterialScrollBehavior {
+  const _NoOverscrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
+}
+
 class AtelierApp extends StatefulWidget {
   const AtelierApp({super.key, required this.database, required this.prefs});
 
@@ -117,6 +132,7 @@ class _AtelierAppState extends State<AtelierApp> {
                   darkTheme: AtelierTheme.dark(),
                   themeMode: state.settings.themeMode,
                   routerConfig: _router,
+                  scrollBehavior: const _NoOverscrollBehavior(),
                 ),
               ),
             );

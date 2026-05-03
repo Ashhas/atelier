@@ -76,6 +76,7 @@ class YearBannerExpanded extends StatelessWidget {
                 fontSize: 20,
                 letterSpacing: -0.4,
                 height: 1.2,
+                fontStyle: FontStyle.normal,
               ),
             ),
           ],

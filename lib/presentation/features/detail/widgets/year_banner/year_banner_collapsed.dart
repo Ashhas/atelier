@@ -43,7 +43,10 @@ class YearBannerCollapsed extends StatelessWidget {
             Expanded(
               child: Text(
                 yearGoal.title,
-                style: AtelierTypography.serifTitle.copyWith(color: p.ink),
+                style: AtelierTypography.serifTitle.copyWith(
+                  color: p.ink,
+                  fontStyle: FontStyle.normal,
+                ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),

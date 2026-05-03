@@ -53,6 +53,25 @@ class AtelierTypography {
     fontWeight: FontWeight.w400,
   );
 
+  // ── Upright Fraunces variants — same metrics as the italic tokens but
+  // resolve to the roman font face. Used where italic-by-default would
+  // hurt readability (detail-screen month goals + year banners) but the
+  // serif personality is still wanted. .copyWith(fontStyle: normal) on
+  // the italic tokens above does NOT work because google_fonts loads the
+  // dedicated italic-only font face, so we need a separately-loaded
+  // upright face here.
+  static final TextStyle serifDisplayUpright = GoogleFonts.fraunces(
+    fontSize: 24,
+    letterSpacing: -0.5,
+    fontWeight: FontWeight.w400,
+  );
+
+  static final TextStyle serifTitleUpright = GoogleFonts.fraunces(
+    fontSize: 17,
+    letterSpacing: -0.3,
+    fontWeight: FontWeight.w400,
+  );
+
   // ── Sans (Inter — body copy, settings labels) ──
   static final TextStyle sansBody = GoogleFonts.inter(
     fontSize: 13,

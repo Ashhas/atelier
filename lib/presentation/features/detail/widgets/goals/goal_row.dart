@@ -108,10 +108,8 @@ class _GoalRowState extends State<GoalRow> {
                           children: [
                             Text(
                               g.title,
-                              style: AtelierTypography.serifTitle.copyWith(
-                                color: p.ink,
-                                fontStyle: FontStyle.normal,
-                              ),
+                              style: AtelierTypography.serifTitleUpright
+                                  .copyWith(color: p.ink),
                             ),
                             GoalRowDaysLabel(addedAt: g.addedAt),
                           ],

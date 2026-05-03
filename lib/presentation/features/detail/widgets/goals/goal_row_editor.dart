@@ -49,15 +49,11 @@ class _GoalRowEditorState extends State<GoalRowEditor> {
         TextField(
           controller: _controller,
           autofocus: true,
-          style: AtelierTypography.serifTitle.copyWith(
-            color: p.ink,
-            fontStyle: FontStyle.normal,
-          ),
+          style: AtelierTypography.serifTitleUpright.copyWith(color: p.ink),
           decoration: InputDecoration(
             hintText: 'Goal title',
-            hintStyle: AtelierTypography.serifTitle.copyWith(
+            hintStyle: AtelierTypography.serifTitleUpright.copyWith(
               color: p.mute,
-              fontStyle: FontStyle.normal,
             ),
             contentPadding: const EdgeInsets.symmetric(
               vertical: AtelierSpacing.lg,

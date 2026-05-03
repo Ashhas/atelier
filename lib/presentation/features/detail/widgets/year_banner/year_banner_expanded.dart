@@ -71,12 +71,11 @@ class YearBannerExpanded extends StatelessWidget {
             const SizedBox(height: AtelierSpacing.base),
             Text(
               yearGoal.title,
-              style: AtelierTypography.serifDisplay.copyWith(
+              style: AtelierTypography.serifDisplayUpright.copyWith(
                 color: p.ink,
                 fontSize: 20,
                 letterSpacing: -0.4,
                 height: 1.2,
-                fontStyle: FontStyle.normal,
               ),
             ),
           ],

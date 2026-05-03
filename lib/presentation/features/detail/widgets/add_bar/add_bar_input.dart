@@ -20,20 +20,18 @@ class AddBarInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
+    // Both text and hint use AddBarPlaceholder's mono style so the
+    // unfocused → focused transition keeps the same font; only the colour
+    // changes (sub/mute for hint, ink for typed input).
+    final mono = AtelierTypography.monoLabel.copyWith(letterSpacing: 1.4);
     return Expanded(
       child: TextField(
         controller: controller,
         autofocus: true,
-        style: AtelierTypography.serifTitle.copyWith(
-          color: p.ink,
-          fontStyle: FontStyle.italic,
-        ),
+        style: mono.copyWith(color: p.ink),
         decoration: InputDecoration(
           hintText: placeholder,
-          hintStyle: AtelierTypography.serifTitle.copyWith(
-            color: p.mute,
-            fontStyle: FontStyle.italic,
-          ),
+          hintStyle: mono.copyWith(color: p.sub),
           contentPadding: const EdgeInsets.symmetric(
             vertical: AtelierSpacing.base,
             horizontal: AtelierSpacing.md,

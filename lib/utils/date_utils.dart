@@ -16,6 +16,25 @@ class AtelierDateUtils {
     return '$days days';
   }
 
+  /// Returns the English ordinal suffix for [n]: 'st', 'nd', 'rd', or 'th'.
+  /// Handles the 11/12/13 exceptions (all take 'th' even though they end in
+  /// 1/2/3). Returns 'th' for non-positive numbers.
+  static String ordinalSuffix(int n) {
+    if (n <= 0) return 'th';
+    final lastTwo = n % 100;
+    if (lastTwo >= 11 && lastTwo <= 13) return 'th';
+    switch (n % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
+
   static String monthName(int month) {
     const names = [
       'January',

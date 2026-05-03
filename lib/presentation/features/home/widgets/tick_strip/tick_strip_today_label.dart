@@ -1,6 +1,7 @@
 import 'package:atelier/theme/atelier_palette.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
 class TickStripTodayLabel extends StatelessWidget {
@@ -30,7 +31,7 @@ class TickStripTodayLabel extends StatelessWidget {
           style: AtelierTypography.monoMicro,
           children: [
             TextSpan(
-              text: 'D$day',
+              text: 'D$day${AtelierDateUtils.ordinalSuffix(day)}',
               style: TextStyle(color: p.ink, fontWeight: FontWeight.w600),
             ),
             TextSpan(

@@ -28,5 +28,22 @@ void main() {
       expect(AtelierDateUtils.monthName(1), 'January');
       expect(AtelierDateUtils.monthName(12), 'December');
     });
+
+    test('ordinalSuffix handles 1/2/3 and the 11/12/13 exceptions', () {
+      expect(AtelierDateUtils.ordinalSuffix(1), 'st');
+      expect(AtelierDateUtils.ordinalSuffix(2), 'nd');
+      expect(AtelierDateUtils.ordinalSuffix(3), 'rd');
+      expect(AtelierDateUtils.ordinalSuffix(4), 'th');
+      expect(AtelierDateUtils.ordinalSuffix(10), 'th');
+      // 11/12/13 are always 'th' even though they end in 1/2/3.
+      expect(AtelierDateUtils.ordinalSuffix(11), 'th');
+      expect(AtelierDateUtils.ordinalSuffix(12), 'th');
+      expect(AtelierDateUtils.ordinalSuffix(13), 'th');
+      // Back to st/nd/rd from 21 onwards.
+      expect(AtelierDateUtils.ordinalSuffix(21), 'st');
+      expect(AtelierDateUtils.ordinalSuffix(22), 'nd');
+      expect(AtelierDateUtils.ordinalSuffix(23), 'rd');
+      expect(AtelierDateUtils.ordinalSuffix(31), 'st');
+    });
   });
 }

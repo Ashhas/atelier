@@ -239,7 +239,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Work pocket should render the year-goal title and the month-goal title.
-      expect(find.text('Run a marathon'), findsOneWidget);
+      // Pocket year preview prefixes each title with '> ' as a quote mark.
+      expect(find.text('> Run a marathon'), findsOneWidget);
       expect(find.text('Sub-25 5K'), findsOneWidget);
     },
   );

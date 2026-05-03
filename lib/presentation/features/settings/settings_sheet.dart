@@ -33,6 +33,9 @@ class _SettingsSheetState extends State<SettingsSheet> {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    // Bottom inset for the system nav bar (3-button or gesture pill) so the
+    // sheet's last row never sits behind it when the app is edge-to-edge.
+    final systemNavInset = MediaQuery.viewPaddingOf(context).bottom;
     return Container(
       decoration: BoxDecoration(
         color: c.bg,
@@ -47,11 +50,11 @@ class _SettingsSheetState extends State<SettingsSheet> {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         AtelierSpacing.x3l, // 22 left
         AtelierSpacing.base + AtelierSpacing.sm, // 12 top
         AtelierSpacing.x3l, // 22 right
-        AtelierSpacing.x4l, // 28 bottom
+        AtelierSpacing.x4l + systemNavInset, // 28 + nav bar height
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

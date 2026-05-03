@@ -72,6 +72,12 @@ class AtelierTypography {
     fontWeight: FontWeight.w400,
   );
 
+  static final TextStyle serifBodyUpright = GoogleFonts.fraunces(
+    fontSize: 12.5,
+    letterSpacing: -0.2,
+    fontWeight: FontWeight.w400,
+  );
+
   // ── Sans (Inter — body copy, settings labels) ──
   static final TextStyle sansBody = GoogleFonts.inter(
     fontSize: 13,

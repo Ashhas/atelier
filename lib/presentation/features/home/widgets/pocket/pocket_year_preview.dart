@@ -92,7 +92,7 @@ class PocketYearPreview extends StatelessWidget {
             ...visible.map(
               (yg) => Text(
                 yg.title,
-                style: AtelierTypography.serifBody.copyWith(
+                style: AtelierTypography.serifBodyUpright.copyWith(
                   color: c.sub,
                   fontSize: 12,
                 ),

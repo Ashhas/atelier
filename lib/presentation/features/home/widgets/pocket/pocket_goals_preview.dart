@@ -61,7 +61,9 @@ class PocketGoalsPreview extends StatelessWidget {
                   Expanded(
                     child: Text(
                       g.title,
-                      style: AtelierTypography.serifBody.copyWith(color: ink),
+                      style: AtelierTypography.serifBodyUpright.copyWith(
+                        color: ink,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

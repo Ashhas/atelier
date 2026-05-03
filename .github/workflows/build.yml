@@ -105,14 +105,14 @@ jobs:
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Build Android APK (debug, unsigned)
-        run: flutter build apk --debug
+      - name: Build Android APK (profile, arm64)
+        run: flutter build apk --profile --target-platform=android-arm64
 
       - name: Rename APK
         env:
           BUILD_VERSION: ${{ needs.setup.outputs.build_version }}
         run: |
-          cp build/app/outputs/flutter-apk/app-debug.apk \
+          cp build/app/outputs/flutter-apk/app-profile.apk \
              "atelier-android-${BUILD_VERSION}.apk"
 
       - name: Upload Android artifact

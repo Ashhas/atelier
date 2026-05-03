@@ -59,7 +59,7 @@ Strict analyzer (`strict-casts`, `strict-inference`, `strict-raw-types`) plus `f
 
 ## Build
 
-The `build.yml` GitHub Actions workflow builds a debug APK for Android and an unsigned `.app` archive for iOS, both attached as artifacts to the workflow run. Trigger it from the Actions tab via "Run workflow"; choose `android`, `ios`, or `both`. Artifacts are retained for 14 days.
+The `build.yml` GitHub Actions workflow builds a profile-mode arm64 APK for Android and an unsigned `.app` archive for iOS, both attached as artifacts to the workflow run. Trigger it from the Actions tab via "Run workflow"; choose `android`, `ios`, or `both`. Artifacts are retained for 14 days.
 
 ## Design
 

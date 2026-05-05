@@ -127,8 +127,10 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/atelier-release.jks
+          # storeFile is resolved by Gradle relative to android/app/, so the
+          # path here is just the filename — no app/ prefix.
           {
-            printf 'storeFile=app/atelier-release.jks\n'
+            printf 'storeFile=atelier-release.jks\n'
             printf 'storePassword=%s\n' "$ANDROID_KEYSTORE_PASSWORD"
             printf 'keyAlias=%s\n' "$ANDROID_KEY_ALIAS"
             printf 'keyPassword=%s\n' "$ANDROID_KEY_PASSWORD"

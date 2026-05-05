@@ -1,13 +1,16 @@
 import 'package:atelier/presentation/features/settings/widgets/content_font_selector.dart';
+import 'package:atelier/presentation/features/settings/widgets/export_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/font_scale_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_confirm.dart';
 import 'package:atelier/presentation/features/settings/widgets/settings_handle.dart';
 import 'package:atelier/presentation/features/settings/widgets/settings_header.dart';
 import 'package:atelier/presentation/features/settings/widgets/theme_selector.dart';
+import 'package:atelier/services/export_service.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The body widget for the settings modal bottom sheet.
 ///
@@ -73,6 +76,10 @@ class _SettingsSheetState extends State<SettingsSheet> {
           const SizedBox(height: AtelierSpacing.x3l), // 22
           // Divider
           Container(height: 1, color: c.rule),
+          const SizedBox(height: AtelierSpacing.x3l), // 22
+          ExportDataButton(
+            onTap: () => context.read<ExportService>().share(),
+          ),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           // Two-step reset
           if (_confirmingReset)

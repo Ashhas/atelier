@@ -11,6 +11,7 @@ import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart'
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
 import 'package:atelier/services/data_resetter.dart';
+import 'package:atelier/services/export_service.dart';
 import 'package:atelier/services/open_slot_creator.dart';
 import 'package:atelier/theme/atelier_colors.dart';
 import 'package:atelier/theme/atelier_theme.dart';
@@ -52,6 +53,7 @@ class _AtelierAppState extends State<AtelierApp> {
   late final PrefsSettingsRepository _settingsRepo;
   late final OpenSlotCreator _openSlot;
   late final DataResetter _resetter;
+  late final ExportService _exporter;
   late final GoRouter _router;
 
   /// Resolves the effective brightness for the system UI overlay, accounting
@@ -81,13 +83,22 @@ class _AtelierAppState extends State<AtelierApp> {
       yearGoals: _yearGoalsRepo,
       settingsRepository: _settingsRepo,
     );
+    _exporter = ExportService(
+      categories: _categoriesRepo,
+      goals: _goalsRepo,
+      yearGoals: _yearGoalsRepo,
+      settingsRepository: _settingsRepo,
+    );
     _router = AtelierRouter.build();
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
-      providers: [RepositoryProvider.value(value: _resetter)],
+      providers: [
+        RepositoryProvider.value(value: _resetter),
+        RepositoryProvider.value(value: _exporter),
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(

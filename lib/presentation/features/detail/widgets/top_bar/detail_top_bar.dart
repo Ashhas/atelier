@@ -24,9 +24,9 @@ class DetailTopBar extends StatelessWidget {
     final p = AtelierTheme.paletteOf(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AtelierSpacing.x3l,
         AtelierSpacing.xl,
-        AtelierSpacing.x3l,
+        AtelierSpacing.xl,
+        AtelierSpacing.xl,
         AtelierSpacing.lg,
       ),
       child: Row(

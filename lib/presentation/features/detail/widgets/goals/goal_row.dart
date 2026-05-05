@@ -12,14 +12,12 @@ class GoalRow extends StatefulWidget {
   const GoalRow({
     super.key,
     required this.goal,
-    required this.isLast,
     required this.onToggleStar,
     required this.onRename,
     required this.onDelete,
   });
 
   final Goal goal;
-  final bool isLast;
   final VoidCallback onToggleStar;
   final ValueChanged<String> onRename;
   final VoidCallback onDelete;
@@ -66,8 +64,6 @@ class _GoalRowState extends State<GoalRow> {
         ? p.chip
         : Colors.transparent;
 
-    final showDivider = !widget.isLast && !g.starred && !_isExpanded;
-
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: _isEditing
@@ -80,7 +76,6 @@ class _GoalRowState extends State<GoalRow> {
         borderRadius: BorderRadius.circular(
           g.starred || _isExpanded ? AtelierRadii.xl : 0,
         ),
-        border: showDivider ? Border(bottom: BorderSide(color: p.rule)) : null,
       ),
       child: _isEditing
           ? GoalRowEditor(

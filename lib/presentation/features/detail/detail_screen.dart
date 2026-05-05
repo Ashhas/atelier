@@ -49,8 +49,8 @@ class DetailScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(
-                  left: AtelierSpacing.x3l,
-                  right: AtelierSpacing.x3l,
+                  left: AtelierSpacing.xl,
+                  right: AtelierSpacing.xl,
                   bottom: AtelierSpacing.x4l,
                 ),
                 children: [
@@ -81,19 +81,17 @@ class DetailScreen extends StatelessWidget {
                   if (goals.isEmpty)
                     const GoalsEmptyState()
                   else
-                    ...goals.asMap().entries.map(
-                      (e) => GoalRow(
-                        key: ValueKey(e.value.id),
-                        goal: e.value,
-                        isLast: e.key == goals.length - 1,
+                    ...goals.map(
+                      (g) => GoalRow(
+                        key: ValueKey(g.id),
+                        goal: g,
                         onToggleStar: () =>
-                            context.read<GoalsCubit>().toggleStar(e.value.id),
+                            context.read<GoalsCubit>().toggleStar(g.id),
                         onRename: (title) => context.read<GoalsCubit>().rename(
-                          id: e.value.id,
+                          id: g.id,
                           title: title,
                         ),
-                        onDelete: () =>
-                            context.read<GoalsCubit>().delete(e.value.id),
+                        onDelete: () => context.read<GoalsCubit>().delete(g.id),
                       ),
                     ),
                 ],

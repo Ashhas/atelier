@@ -25,7 +25,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (_) {},
             onDelete: () {},
@@ -40,7 +39,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (_) {},
             onDelete: () {},
@@ -58,7 +56,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (_) {},
             onDelete: () {},
@@ -78,7 +75,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (_) {},
             onDelete: () {},
@@ -98,7 +94,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (t) => renamed = t,
             onDelete: () {},
@@ -121,7 +116,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () => called = true,
             onRename: (_) {},
             onDelete: () {},
@@ -138,7 +132,6 @@ void main() {
         _wrap(
           GoalRow(
             goal: _goal,
-            isLast: false,
             onToggleStar: () {},
             onRename: (_) {},
             onDelete: () {},

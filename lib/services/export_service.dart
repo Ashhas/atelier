@@ -89,13 +89,16 @@ Map<String, dynamic> _buildExportJson({
   required AppSettings settings,
   required DateTime exportedAt,
 }) {
+  final categoryNameById = {
+    for (final c in categories) c.id: c.name,
+  };
+
   return {
     'schemaVersion': _schemaVersion,
     'exportedAt': exportedAt.toIso8601String(),
     'categories': [
       for (final c in categories.where((c) => !c.isAddSlot))
         {
-          'id': c.id,
           'name': c.name,
           'order': c.order,
         },
@@ -103,8 +106,7 @@ Map<String, dynamic> _buildExportJson({
     'goals': [
       for (final g in goals)
         {
-          'id': g.id,
-          'goalCategoryId': g.goalCategoryId,
+          'category': categoryNameById[g.goalCategoryId],
           'title': g.title,
           'starred': g.starred,
           'addedAt': g.addedAt.toIso8601String(),
@@ -113,8 +115,7 @@ Map<String, dynamic> _buildExportJson({
     'yearGoals': [
       for (final y in yearGoals)
         {
-          'id': y.id,
-          'goalCategoryId': y.goalCategoryId,
+          'category': categoryNameById[y.goalCategoryId],
           'title': y.title,
         },
     ],

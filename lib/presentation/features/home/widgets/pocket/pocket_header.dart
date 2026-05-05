@@ -31,7 +31,13 @@ class PocketHeader extends StatelessWidget {
         children: [
           Text(
             name.toUpperCase(),
-            style: AtelierTypography.monoEyebrow.copyWith(color: c.sub),
+            // Inter eyebrow — same heft + tracking as the mono variant
+            // it replaced, just on the body sans for a calmer feel.
+            style: AtelierTypography.sansLabel.copyWith(
+              color: c.sub,
+              fontSize: 11,
+              letterSpacing: 1.8,
+            ),
           ),
           const Spacer(),
           Text(

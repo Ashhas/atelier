@@ -38,7 +38,13 @@ class DetailTopBar extends StatelessWidget {
           Expanded(
             child: Text(
               name,
-              style: AtelierTypography.serifDisplay.copyWith(color: p.ink),
+              // Pocket name on detail screens: Inter, matching goal-text
+              // body. Home keeps Fraunces italic for the month name —
+              // detail headers used to too, but the serif felt too
+              // thematic for short user-typed pocket names.
+              style: AtelierTypography.serifDisplayUpright.copyWith(
+                color: p.ink,
+              ),
             ),
           ),
           DetailCountLabel(monthCount: monthCount, yearCount: yearCount),

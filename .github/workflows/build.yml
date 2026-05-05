@@ -128,11 +128,25 @@ jobs:
              "atelier-android-${BUILD_VERSION}-${BUILD_MODE}.apk"
 
       - name: Upload Android artifact
+        id: upload_android
         uses: actions/upload-artifact@v5
         with:
           name: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}
           path: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}.apk
           retention-days: 14
+
+      - name: Write Android summary
+        env:
+          ARTIFACT_NAME: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}
+          ARTIFACT_URL: ${{ steps.upload_android.outputs.artifact-url }}
+          BUILD_MODE: ${{ github.event.inputs.build_mode }}
+        run: |
+          {
+            echo "### Android — \`${BUILD_MODE}\`"
+            echo ""
+            echo "- Artifact: [\`${ARTIFACT_NAME}.apk\`](${ARTIFACT_URL})"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build-ios:
     name: Build iOS app (unsigned)
@@ -182,9 +196,11 @@ jobs:
             echo "::warning title=iOS release downgraded::Release iOS builds here are unsigned and cannot be installed on devices. Building profile instead."
             echo "EFFECTIVE_MODE=profile" >> "$GITHUB_ENV"
             echo "ARTIFACT_SUFFIX=profile-downgraded-from-release" >> "$GITHUB_ENV"
+            echo "DOWNGRADE_NOTE=Release was requested but iOS artifacts here are unsigned and can't be installed on a device. Built **profile** instead." >> "$GITHUB_ENV"
           else
             echo "EFFECTIVE_MODE=$REQUESTED_MODE" >> "$GITHUB_ENV"
             echo "ARTIFACT_SUFFIX=$REQUESTED_MODE" >> "$GITHUB_ENV"
+            echo "DOWNGRADE_NOTE=" >> "$GITHUB_ENV"
           fi
 
       - name: Build iOS app (no codesign)
@@ -198,8 +214,26 @@ jobs:
           zip -r "../../../atelier-ios-${BUILD_VERSION}-${ARTIFACT_SUFFIX}.zip" Runner.app
 
       - name: Upload iOS artifact
+        id: upload_ios
         uses: actions/upload-artifact@v5
         with:
           name: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}
           path: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}.zip
           retention-days: 14
+
+      - name: Write iOS summary
+        env:
+          ARTIFACT_NAME: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}
+          ARTIFACT_URL: ${{ steps.upload_ios.outputs.artifact-url }}
+          REQUESTED_MODE: ${{ github.event.inputs.build_mode }}
+        run: |
+          {
+            echo "### iOS — \`${EFFECTIVE_MODE}\` (requested: \`${REQUESTED_MODE}\`)"
+            echo ""
+            if [[ -n "$DOWNGRADE_NOTE" ]]; then
+              echo "> :warning: ${DOWNGRADE_NOTE}"
+              echo ""
+            fi
+            echo "- Artifact: [\`${ARTIFACT_NAME}.zip\`](${ARTIFACT_URL})"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"

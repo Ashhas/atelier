@@ -39,16 +39,16 @@ class PocketYearPreview extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AtelierSpacing.sm, // 4
-        0,
-        AtelierSpacing.sm, // 4
         AtelierSpacing.md, // 6
+        AtelierSpacing.sm, // 4
+        AtelierSpacing.lg, // 10
       ),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: c.rule, width: 1, style: BorderStyle.solid),
         ),
       ),
-      margin: const EdgeInsets.only(bottom: AtelierSpacing.xs),
+      margin: const EdgeInsets.only(bottom: AtelierSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

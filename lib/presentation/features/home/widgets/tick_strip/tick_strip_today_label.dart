@@ -31,7 +31,7 @@ class TickStripTodayLabel extends StatelessWidget {
           style: AtelierTypography.monoMicro,
           children: [
             TextSpan(
-              text: 'D$day${AtelierDateUtils.ordinalSuffix(day)}',
+              text: '$day${AtelierDateUtils.ordinalSuffix(day)}',
               style: TextStyle(color: p.ink, fontWeight: FontWeight.w600),
             ),
             TextSpan(

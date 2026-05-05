@@ -97,7 +97,7 @@ class _GoalRowState extends State<GoalRow> {
                   behavior: HitTestBehavior.opaque,
                   onTap: _toggleExpanded,
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GoalRowStarButton(
                         starred: g.starred,

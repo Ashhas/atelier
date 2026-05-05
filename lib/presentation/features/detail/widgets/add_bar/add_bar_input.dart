@@ -1,6 +1,7 @@
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class AddBarInput extends StatelessWidget {
@@ -20,18 +21,16 @@ class AddBarInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    // Both text and hint use AddBarPlaceholder's mono style so the
-    // unfocused → focused transition keeps the same font; only the colour
-    // changes (sub/mute for hint, ink for typed input).
-    final mono = AtelierTypography.monoLabel.copyWith(letterSpacing: 1.4);
+    final font = context.contentFont;
+    final content = AtelierTypography.serifTitleUpright(font);
     return Expanded(
       child: TextField(
         controller: controller,
         autofocus: true,
-        style: mono.copyWith(color: p.ink),
+        style: content.copyWith(color: p.ink),
         decoration: InputDecoration(
           hintText: placeholder,
-          hintStyle: mono.copyWith(color: p.sub),
+          hintStyle: content.copyWith(color: p.sub),
           contentPadding: const EdgeInsets.symmetric(
             vertical: AtelierSpacing.base,
             horizontal: AtelierSpacing.md,

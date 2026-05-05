@@ -1,0 +1,14 @@
+# Android release-signing config consumed by android/app/build.gradle.kts.
+#
+# Local dev: copy this file to android/key.properties and fill in the values.
+# The real key.properties is gitignored.
+#
+# CI: build.yml writes android/key.properties from GitHub secrets before
+# invoking `flutter build apk --release` — no manual setup needed there.
+#
+# `storeFile` is a path relative to the android/ directory.
+
+storeFile=atelier-release.jks
+storePassword=changeme
+keyAlias=atelier
+keyPassword=changeme

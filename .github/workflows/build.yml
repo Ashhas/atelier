@@ -16,6 +16,15 @@ on:
           - android
           - ios
           - both
+      build_mode:
+        type: choice
+        description: 'Flutter build mode'
+        required: true
+        default: 'release'
+        options:
+          - release
+          - profile
+          - debug
 
 concurrency:
   group: build-${{ github.ref }}
@@ -105,21 +114,24 @@ jobs:
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Build Android APK (profile, arm64)
-        run: flutter build apk --profile --target-platform=android-arm64
+      - name: Build Android APK (${{ github.event.inputs.build_mode }}, arm64)
+        env:
+          BUILD_MODE: ${{ github.event.inputs.build_mode }}
+        run: flutter build apk "--${BUILD_MODE}" --target-platform=android-arm64
 
       - name: Rename APK
         env:
           BUILD_VERSION: ${{ needs.setup.outputs.build_version }}
+          BUILD_MODE: ${{ github.event.inputs.build_mode }}
         run: |
-          cp build/app/outputs/flutter-apk/app-profile.apk \
-             "atelier-android-${BUILD_VERSION}.apk"
+          cp "build/app/outputs/flutter-apk/app-${BUILD_MODE}.apk" \
+             "atelier-android-${BUILD_VERSION}-${BUILD_MODE}.apk"
 
       - name: Upload Android artifact
         uses: actions/upload-artifact@v5
         with:
-          name: atelier-android-${{ needs.setup.outputs.build_version }}
-          path: atelier-android-${{ needs.setup.outputs.build_version }}.apk
+          name: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}
+          path: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}.apk
           retention-days: 14
 
   build-ios:
@@ -159,19 +171,35 @@ jobs:
       - name: Generate Drift code
         run: dart run build_runner build --delete-conflicting-outputs
 
+      # iOS artifacts are unsigned, so a --release build can't be installed on
+      # a device without re-signing. Auto-downgrade release -> profile and
+      # surface that loudly in logs and the artifact name.
+      - name: Resolve effective build mode
+        env:
+          REQUESTED_MODE: ${{ github.event.inputs.build_mode }}
+        run: |
+          if [[ "$REQUESTED_MODE" == "release" ]]; then
+            echo "::warning title=iOS release downgraded::Release iOS builds here are unsigned and cannot be installed on devices. Building profile instead."
+            echo "EFFECTIVE_MODE=profile" >> "$GITHUB_ENV"
+            echo "ARTIFACT_SUFFIX=profile-downgraded-from-release" >> "$GITHUB_ENV"
+          else
+            echo "EFFECTIVE_MODE=$REQUESTED_MODE" >> "$GITHUB_ENV"
+            echo "ARTIFACT_SUFFIX=$REQUESTED_MODE" >> "$GITHUB_ENV"
+          fi
+
       - name: Build iOS app (no codesign)
-        run: flutter build ios --debug --no-codesign
+        run: flutter build ios "--${EFFECTIVE_MODE}" --no-codesign
 
       - name: Archive Runner.app
         env:
           BUILD_VERSION: ${{ needs.setup.outputs.build_version }}
         run: |
           cd build/ios/iphoneos
-          zip -r "../../../atelier-ios-${BUILD_VERSION}.zip" Runner.app
+          zip -r "../../../atelier-ios-${BUILD_VERSION}-${ARTIFACT_SUFFIX}.zip" Runner.app
 
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v5
         with:
-          name: atelier-ios-${{ needs.setup.outputs.build_version }}
-          path: atelier-ios-${{ needs.setup.outputs.build_version }}.zip
+          name: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}
+          path: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}.zip
           retention-days: 14

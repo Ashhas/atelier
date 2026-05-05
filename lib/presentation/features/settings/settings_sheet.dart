@@ -77,9 +77,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
           // Divider
           Container(height: 1, color: c.rule),
           const SizedBox(height: AtelierSpacing.x3l), // 22
-          ExportDataButton(
-            onTap: () => context.read<ExportService>().share(),
-          ),
+          ExportDataButton(onTap: () => context.read<ExportService>().share()),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           // Two-step reset
           if (_confirmingReset)

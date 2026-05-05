@@ -57,10 +57,9 @@ class ExportService {
     final file = File('${dir.path}/atelier-export-$stamp.json');
     await file.writeAsString(encoded);
 
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/json')],
-      subject: 'Atelier export',
-    );
+    await Share.shareXFiles([
+      XFile(file.path, mimeType: 'application/json'),
+    ], subject: 'Atelier export');
   }
 }
 
@@ -89,19 +88,14 @@ Map<String, dynamic> _buildExportJson({
   required AppSettings settings,
   required DateTime exportedAt,
 }) {
-  final categoryNameById = {
-    for (final c in categories) c.id: c.name,
-  };
+  final categoryNameById = {for (final c in categories) c.id: c.name};
 
   return {
     'schemaVersion': _schemaVersion,
     'exportedAt': exportedAt.toIso8601String(),
     'categories': [
       for (final c in categories.where((c) => !c.isAddSlot))
-        {
-          'name': c.name,
-          'order': c.order,
-        },
+        {'name': c.name, 'order': c.order},
     ],
     'goals': [
       for (final g in goals)
@@ -114,10 +108,7 @@ Map<String, dynamic> _buildExportJson({
     ],
     'yearGoals': [
       for (final y in yearGoals)
-        {
-          'category': categoryNameById[y.goalCategoryId],
-          'title': y.title,
-        },
+        {'category': categoryNameById[y.goalCategoryId], 'title': y.title},
     ],
     'settings': {
       'themeMode': settings.themeMode.name,

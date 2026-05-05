@@ -1,4 +1,5 @@
 import 'package:atelier/domain/models/app_settings.dart';
+import 'package:atelier/domain/models/enums/content_font.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
 import 'package:atelier/domain/repositories/settings_repository.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +12,17 @@ class PrefsSettingsRepository implements SettingsRepository {
 
   static const _kThemeMode = 'atelier.themeMode';
   static const _kFontScale = 'atelier.fontScale';
+  static const _kContentFont = 'atelier.contentFont';
 
   @override
   Future<AppSettings> read() async {
     final theme = _prefs.getString(_kThemeMode);
     final scale = _prefs.getString(_kFontScale);
+    final font = _prefs.getString(_kContentFont);
     return AppSettings(
       themeMode: _parseTheme(theme),
       fontScale: _parseScale(scale),
+      contentFont: _parseContentFont(font),
     );
   }
 
@@ -26,12 +30,14 @@ class PrefsSettingsRepository implements SettingsRepository {
   Future<void> write(AppSettings settings) async {
     await _prefs.setString(_kThemeMode, settings.themeMode.name);
     await _prefs.setString(_kFontScale, settings.fontScale.name);
+    await _prefs.setString(_kContentFont, settings.contentFont.name);
   }
 
   @override
   Future<void> clear() async {
     await _prefs.remove(_kThemeMode);
     await _prefs.remove(_kFontScale);
+    await _prefs.remove(_kContentFont);
   }
 
   ThemeMode _parseTheme(String? raw) {
@@ -53,6 +59,19 @@ class PrefsSettingsRepository implements SettingsRepository {
         return FontScale.large;
       default:
         return FontScale.medium;
+    }
+  }
+
+  ContentFont _parseContentFont(String? raw) {
+    switch (raw) {
+      case 'inter':
+        return ContentFont.inter;
+      case 'manrope':
+        return ContentFont.manrope;
+      case 'fraunces':
+        return ContentFont.fraunces;
+      default:
+        return ContentFont.plex;
     }
   }
 }

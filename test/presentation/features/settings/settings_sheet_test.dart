@@ -1,6 +1,7 @@
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/presentation/features/settings/settings_sheet.dart';
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
+import 'package:atelier/presentation/features/settings/widgets/content_font_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/font_scale_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_confirm.dart';
@@ -43,6 +44,7 @@ void main() {
       expect(find.byType(SettingsHeader), findsOneWidget);
       expect(find.byType(ThemeSelector), findsOneWidget);
       expect(find.byType(FontScaleSelector), findsOneWidget);
+      expect(find.byType(ContentFontSelector), findsOneWidget);
       expect(find.byType(ResetDataButton), findsOneWidget);
     });
 

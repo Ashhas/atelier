@@ -1,3 +1,4 @@
+import 'package:atelier/presentation/features/settings/widgets/content_font_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/font_scale_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_confirm.dart';
@@ -67,6 +68,8 @@ class _SettingsSheetState extends State<SettingsSheet> {
           const ThemeSelector(),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           const FontScaleSelector(),
+          const SizedBox(height: AtelierSpacing.x3l), // 22
+          const ContentFontSelector(),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           // Divider
           Container(height: 1, color: c.rule),

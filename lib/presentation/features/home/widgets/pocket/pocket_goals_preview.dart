@@ -2,6 +2,7 @@ import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 /// Shows up to 3 goals inside a pocket card; starred goals sort first.
@@ -17,6 +18,7 @@ class PocketGoalsPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    final font = context.contentFont;
     // Starred first, then insertion order (spec §3.3)
     final sorted = [
       ...goals.where((g) => g.starred),
@@ -61,9 +63,9 @@ class PocketGoalsPreview extends StatelessWidget {
                   Expanded(
                     child: Text(
                       g.title,
-                      style: AtelierTypography.serifBodyUpright.copyWith(
-                        color: ink,
-                      ),
+                      style: AtelierTypography.serifBodyUpright(
+                        font,
+                      ).copyWith(color: ink),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

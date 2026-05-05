@@ -2,6 +2,7 @@ import 'package:atelier/presentation/features/detail/widgets/goals/goal_row_edit
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class GoalRowEditor extends StatefulWidget {
@@ -43,18 +44,21 @@ class _GoalRowEditorState extends State<GoalRowEditor> {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
+    final font = context.contentFont;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TextField(
           controller: _controller,
           autofocus: true,
-          style: AtelierTypography.serifTitleUpright.copyWith(color: p.ink),
+          style: AtelierTypography.serifTitleUpright(
+            font,
+          ).copyWith(color: p.ink),
           decoration: InputDecoration(
             hintText: 'Goal title',
-            hintStyle: AtelierTypography.serifTitleUpright.copyWith(
-              color: p.mute,
-            ),
+            hintStyle: AtelierTypography.serifTitleUpright(
+              font,
+            ).copyWith(color: p.mute),
             contentPadding: const EdgeInsets.symmetric(
               vertical: AtelierSpacing.lg,
               horizontal: AtelierSpacing.base + AtelierSpacing.sm,

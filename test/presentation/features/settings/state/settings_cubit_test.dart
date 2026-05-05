@@ -1,5 +1,6 @@
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/app_settings.dart';
+import 'package:atelier/domain/models/enums/content_font.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
@@ -52,5 +53,19 @@ void main() {
     final afterSetScale = emitted.skip(1).toList();
     expect(afterSetScale, hasLength(1));
     expect(afterSetScale.last.settings.fontScale, FontScale.large);
+  });
+
+  test('setContentFont persists + emits', () async {
+    final cubit = SettingsCubit(repo);
+    final emitted = <SettingsState>[];
+    final sub = cubit.stream.listen(emitted.add);
+    await cubit.load();
+    await cubit.setContentFont(ContentFont.fraunces);
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+    final afterSetFont = emitted.skip(1).toList();
+    expect(afterSetFont, hasLength(1));
+    expect(afterSetFont.last.settings.contentFont, ContentFont.fraunces);
+    expect((await repo.read()).contentFont, ContentFont.fraunces);
   });
 }

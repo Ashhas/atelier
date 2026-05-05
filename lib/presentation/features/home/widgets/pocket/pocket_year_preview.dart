@@ -2,6 +2,7 @@ import 'package:atelier/domain/models/year_goal.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
+import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 /// Shows the year-goal preview inside a pocket card.
@@ -28,6 +29,7 @@ class PocketYearPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    final font = context.contentFont;
     final year = (now ?? DateTime.now()).year;
     final visible = expandedYearGoals.take(2).toList();
     final overflowCount = expandedYearGoals.length > 2
@@ -92,10 +94,9 @@ class PocketYearPreview extends StatelessWidget {
             ...visible.map(
               (yg) => Text(
                 '> ${yg.title}',
-                style: AtelierTypography.serifBodyUpright.copyWith(
-                  color: c.sub,
-                  fontSize: 12,
-                ),
+                style: AtelierTypography.serifBodyUpright(
+                  font,
+                ).copyWith(color: c.sub, fontSize: 12),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

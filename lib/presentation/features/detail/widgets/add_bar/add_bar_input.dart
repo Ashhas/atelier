@@ -1,7 +1,6 @@
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
-import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class AddBarInput extends StatelessWidget {
@@ -21,8 +20,7 @@ class AddBarInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    final font = context.contentFont;
-    final content = AtelierTypography.serifTitleUpright(font);
+    final content = AtelierTypography.serifTitleUpright;
     return Expanded(
       child: TextField(
         controller: controller,
@@ -30,7 +28,9 @@ class AddBarInput extends StatelessWidget {
         style: content.copyWith(color: p.ink),
         decoration: InputDecoration(
           hintText: placeholder,
-          hintStyle: content.copyWith(color: p.sub),
+          // Hint a touch smaller than the typed text so it reads as a
+          // placeholder rather than competing with what the user types.
+          hintStyle: content.copyWith(color: p.sub, fontSize: 14),
           contentPadding: const EdgeInsets.symmetric(
             vertical: AtelierSpacing.base,
             horizontal: AtelierSpacing.md,

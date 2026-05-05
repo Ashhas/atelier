@@ -1,6 +1,5 @@
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/app_settings.dart';
-import 'package:atelier/domain/models/enums/content_font.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,19 +18,11 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final repo = PrefsSettingsRepository(prefs);
     await repo.write(
-      const AppSettings(
-        themeMode: ThemeMode.dark,
-        fontScale: FontScale.large,
-        contentFont: ContentFont.fraunces,
-      ),
+      const AppSettings(themeMode: ThemeMode.dark, fontScale: FontScale.large),
     );
     expect(
       await repo.read(),
-      const AppSettings(
-        themeMode: ThemeMode.dark,
-        fontScale: FontScale.large,
-        contentFont: ContentFont.fraunces,
-      ),
+      const AppSettings(themeMode: ThemeMode.dark, fontScale: FontScale.large),
     );
   });
 

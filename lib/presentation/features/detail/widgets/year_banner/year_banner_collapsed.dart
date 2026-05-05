@@ -2,7 +2,6 @@ import 'package:atelier/domain/models/year_goal.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
-import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class YearBannerCollapsed extends StatelessWidget {
@@ -18,7 +17,6 @@ class YearBannerCollapsed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    final font = context.contentFont;
     return GestureDetector(
       onTap: onToggle,
       child: Container(
@@ -45,9 +43,9 @@ class YearBannerCollapsed extends StatelessWidget {
             Expanded(
               child: Text(
                 yearGoal.title,
-                style: AtelierTypography.serifTitleUpright(
-                  font,
-                ).copyWith(color: p.ink),
+                style: AtelierTypography.serifTitleUpright.copyWith(
+                  color: p.ink,
+                ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),

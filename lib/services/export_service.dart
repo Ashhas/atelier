@@ -74,7 +74,7 @@ class ExportService {
 ///     more naturally for a human.
 ///   • Which fields to include per record. `id` and `addedAt` are useful for
 ///     re-import; drop them if you only care about content.
-///   • How to render enums (`themeMode`, `fontScale`, `contentFont`) —
+///   • How to render enums (`themeMode`, `fontScale`) —
 ///     `.name` is the natural choice.
 ///   • Whether `starred` goals deserve a separate top-level array.
 ///
@@ -113,7 +113,6 @@ Map<String, dynamic> _buildExportJson({
     'settings': {
       'themeMode': settings.themeMode.name,
       'fontScale': settings.fontScale.name,
-      'contentFont': settings.contentFont.name,
     },
   };
 }

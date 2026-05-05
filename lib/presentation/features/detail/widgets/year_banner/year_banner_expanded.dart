@@ -2,7 +2,6 @@ import 'package:atelier/domain/models/year_goal.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
-import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class YearBannerExpanded extends StatelessWidget {
@@ -20,7 +19,6 @@ class YearBannerExpanded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    final font = context.contentFont;
     return GestureDetector(
       onTap: onToggle,
       child: Container(
@@ -73,7 +71,7 @@ class YearBannerExpanded extends StatelessWidget {
             const SizedBox(height: AtelierSpacing.base),
             Text(
               yearGoal.title,
-              style: AtelierTypography.serifDisplayUpright(font).copyWith(
+              style: AtelierTypography.serifDisplayUpright.copyWith(
                 color: p.ink,
                 fontSize: 20,
                 letterSpacing: -0.4,

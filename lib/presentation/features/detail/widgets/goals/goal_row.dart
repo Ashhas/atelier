@@ -6,7 +6,6 @@ import 'package:atelier/presentation/features/detail/widgets/goals/goal_row_star
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
-import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class GoalRow extends StatefulWidget {
@@ -59,7 +58,6 @@ class _GoalRowState extends State<GoalRow> {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    final font = context.contentFont;
     final g = widget.goal;
 
     final background = g.starred
@@ -110,9 +108,8 @@ class _GoalRowState extends State<GoalRow> {
                           children: [
                             Text(
                               g.title,
-                              style: AtelierTypography.serifTitleUpright(
-                                font,
-                              ).copyWith(color: p.ink),
+                              style: AtelierTypography.serifTitleUpright
+                                  .copyWith(color: p.ink),
                             ),
                             GoalRowDaysLabel(addedAt: g.addedAt),
                           ],

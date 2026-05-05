@@ -1,7 +1,6 @@
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
-import 'package:atelier/theme/content_font_context.dart';
 import 'package:flutter/material.dart';
 
 class AddBarPlaceholder extends StatelessWidget {
@@ -17,7 +16,6 @@ class AddBarPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
-    final font = context.contentFont;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -29,9 +27,7 @@ class AddBarPlaceholder extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: AtelierTypography.serifTitleUpright(
-              font,
-            ).copyWith(color: p.sub),
+            style: AtelierTypography.serifTitleUpright.copyWith(color: p.sub),
           ),
         ),
       ),

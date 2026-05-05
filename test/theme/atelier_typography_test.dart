@@ -1,4 +1,3 @@
-import 'package:atelier/domain/models/enums/content_font.dart';
 import 'package:atelier/theme/atelier_typography.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,36 +46,28 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets('goal-text upright tokens use Inter', (
+      WidgetTester tester,
+    ) async {
+      expect(
+        AtelierTypography.serifDisplayUpright.fontFamily,
+        contains('Inter'),
+      );
+      expect(
+        AtelierTypography.serifDisplayUpright.fontStyle,
+        isNot(FontStyle.italic),
+      );
+      expect(AtelierTypography.serifTitleUpright.fontFamily, contains('Inter'));
+      expect(AtelierTypography.serifBodyUpright.fontFamily, contains('Inter'));
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('sans tokens use Inter', (WidgetTester tester) async {
       expect(AtelierTypography.sansBody.fontFamily, contains('Inter'));
       expect(AtelierTypography.sansBody.fontSize, 13);
 
       expect(AtelierTypography.sansLabel.fontSize, 14);
       expect(AtelierTypography.sansLabel.fontWeight, FontWeight.w600);
-
-      await tester.pumpAndSettle();
-    });
-
-    testWidgets('content-font tokens resolve to selected family upright', (
-      WidgetTester tester,
-    ) async {
-      final plex = AtelierTypography.serifTitleUpright(ContentFont.plex);
-      expect(plex.fontFamily?.toLowerCase(), contains('plex'));
-      expect(plex.fontStyle, FontStyle.normal);
-      expect(plex.fontSize, 17);
-
-      final manrope = AtelierTypography.serifBodyUpright(ContentFont.manrope);
-      expect(manrope.fontFamily, contains('Manrope'));
-      expect(manrope.fontStyle, FontStyle.normal);
-
-      final inter = AtelierTypography.serifDisplayUpright(ContentFont.inter);
-      expect(inter.fontFamily, contains('Inter'));
-      expect(inter.fontStyle, FontStyle.normal);
-
-      // Serif option is the only one that switches to italic.
-      final serif = AtelierTypography.serifTitleUpright(ContentFont.fraunces);
-      expect(serif.fontFamily, contains('Fraunces'));
-      expect(serif.fontStyle, FontStyle.italic);
 
       await tester.pumpAndSettle();
     });

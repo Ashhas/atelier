@@ -1,4 +1,3 @@
-import 'package:atelier/domain/models/enums/content_font.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
 import 'package:atelier/domain/repositories/settings_repository.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
@@ -23,12 +22,6 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future<void> setFontScale(FontScale scale) async {
     final updated = state.settings.copyWith(fontScale: scale);
-    await _repo.write(updated);
-    emit(state.copyWith(settings: updated));
-  }
-
-  Future<void> setContentFont(ContentFont font) async {
-    final updated = state.settings.copyWith(contentFont: font);
     await _repo.write(updated);
     emit(state.copyWith(settings: updated));
   }

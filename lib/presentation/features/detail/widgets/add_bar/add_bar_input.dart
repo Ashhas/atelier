@@ -28,9 +28,7 @@ class AddBarInput extends StatelessWidget {
         style: content.copyWith(color: p.ink),
         decoration: InputDecoration(
           hintText: placeholder,
-          // Hint a touch smaller than the typed text so it reads as a
-          // placeholder rather than competing with what the user types.
-          hintStyle: content.copyWith(color: p.sub, fontSize: 14),
+          hintStyle: content.copyWith(color: p.sub),
           contentPadding: const EdgeInsets.symmetric(
             vertical: AtelierSpacing.base,
             horizontal: AtelierSpacing.md,

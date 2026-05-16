@@ -203,7 +203,7 @@ jobs:
              "atelier-android-${BUILD_VERSION}-${BUILD_MODE}.apk"
 
       - name: Upload Android artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}
           path: atelier-android-${{ needs.setup.outputs.build_version }}-${{ github.event.inputs.build_mode }}.apk
@@ -272,7 +272,7 @@ jobs:
           zip -r "../../../atelier-ios-${BUILD_VERSION}-${ARTIFACT_SUFFIX}.zip" Runner.app
 
       - name: Upload iOS artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}
           path: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}.zip
@@ -302,7 +302,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -378,16 +378,15 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.setup.outputs.release_tag }}
           name: ${{ needs.setup.outputs.release_name }}
           body: ${{ steps.notes.outputs.body }}
           prerelease: ${{ needs.setup.outputs.prerelease }}
-          # Strict: fails if the tag already exists. For prod that's the
-          # safety we want; for debug, the run-number suffix in the tag
-          # guarantees uniqueness so this won't actually trip.
+          # Single brace-expansion glob so platform-specific runs don't
+          # trip fail_on_unmatched_files: an Android-only run produces no
+          # .zip, an iOS-only run produces no .apk. The safety net still
+          # fires if the run produced literally zero artifacts.
           fail_on_unmatched_files: true
-          files: |
-            dist/**/*.apk
-            dist/**/*.zip
+          files: dist/**/*.{apk,zip}

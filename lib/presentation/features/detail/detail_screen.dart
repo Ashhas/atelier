@@ -101,8 +101,8 @@ class _DetailScreenState extends State<DetailScreen> {
                   if (goals.isEmpty)
                     const GoalsEmptyState()
                   else
-                    ...goals.map(
-                      (g) => GoalRow(
+                    for (final g in goals) ...[
+                      GoalRow(
                         key: ValueKey(g.id),
                         goal: g,
                         isExpanded: _expandedGoalId == g.id,
@@ -115,7 +115,11 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                         onDelete: () => context.read<GoalsCubit>().delete(g.id),
                       ),
-                    ),
+                      // Small gap so adjacent rows with filled backgrounds
+                      // (starred = p.starBg, expanded = p.chip) don't visually
+                      // weld into one pill.
+                      const SizedBox(height: AtelierSpacing.sm),
+                    ],
                 ],
               ),
             ),

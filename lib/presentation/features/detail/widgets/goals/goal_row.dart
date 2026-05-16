@@ -12,12 +12,16 @@ class GoalRow extends StatefulWidget {
   const GoalRow({
     super.key,
     required this.goal,
+    required this.isExpanded,
+    required this.onToggleExpanded,
     required this.onToggleStar,
     required this.onRename,
     required this.onDelete,
   });
 
   final Goal goal;
+  final bool isExpanded;
+  final VoidCallback onToggleExpanded;
   final VoidCallback onToggleStar;
   final ValueChanged<String> onRename;
   final VoidCallback onDelete;
@@ -27,14 +31,15 @@ class GoalRow extends StatefulWidget {
 }
 
 class _GoalRowState extends State<GoalRow> {
-  bool _isExpanded = false;
   bool _isEditing = false;
 
-  void _toggleExpanded() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (!_isExpanded) _isEditing = false;
-    });
+  @override
+  void didUpdateWidget(covariant GoalRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Parent collapsed us (e.g. another row was opened) — drop edit mode too.
+    if (oldWidget.isExpanded && !widget.isExpanded && _isEditing) {
+      _isEditing = false;
+    }
   }
 
   void _startEditing() {
@@ -47,10 +52,8 @@ class _GoalRowState extends State<GoalRow> {
 
   void _save(String title) {
     widget.onRename(title);
-    setState(() {
-      _isEditing = false;
-      _isExpanded = false;
-    });
+    setState(() => _isEditing = false);
+    if (widget.isExpanded) widget.onToggleExpanded();
   }
 
   @override
@@ -58,9 +61,10 @@ class _GoalRowState extends State<GoalRow> {
     final p = AtelierTheme.paletteOf(context);
     final g = widget.goal;
 
+    final isExpanded = widget.isExpanded;
     final background = g.starred
         ? p.starBg
-        : _isExpanded
+        : isExpanded
         ? p.chip
         : Colors.transparent;
 
@@ -74,7 +78,7 @@ class _GoalRowState extends State<GoalRow> {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(
-          g.starred || _isExpanded ? AtelierRadii.xl : 0,
+          g.starred || isExpanded ? AtelierRadii.xl : 0,
         ),
       ),
       child: _isEditing
@@ -88,7 +92,7 @@ class _GoalRowState extends State<GoalRow> {
               children: [
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: _toggleExpanded,
+                  onTap: widget.onToggleExpanded,
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -113,7 +117,7 @@ class _GoalRowState extends State<GoalRow> {
                     ],
                   ),
                 ),
-                if (_isExpanded) ...[
+                if (isExpanded) ...[
                   Divider(color: p.rule, height: AtelierSpacing.xl),
                   GoalRowActions(
                     onEdit: _startEditing,

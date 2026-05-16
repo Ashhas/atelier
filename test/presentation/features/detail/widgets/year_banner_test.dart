@@ -29,6 +29,7 @@ void main() {
             categoryName: 'Body',
             onToggle: (_) {},
             onDelete: (_) {},
+            onRename: (_, __) {},
           ),
         ),
       );
@@ -44,6 +45,7 @@ void main() {
             categoryName: 'Body',
             onToggle: (_) {},
             onDelete: (_) {},
+            onRename: (_, __) {},
           ),
         ),
       );
@@ -65,6 +67,7 @@ void main() {
             categoryName: 'Skill',
             onToggle: (_) {},
             onDelete: (_) {},
+            onRename: (_, __) {},
           ),
         ),
       );
@@ -81,6 +84,7 @@ void main() {
             categoryName: 'Body',
             onToggle: (id) => toggled = id,
             onDelete: (_) {},
+            onRename: (_, __) {},
           ),
         ),
       );
@@ -98,11 +102,76 @@ void main() {
             categoryName: 'Body',
             onToggle: (_) {},
             onDelete: (id) => deleted = id,
+            onRename: (_, __) {},
           ),
         ),
       );
       await tester.tap(find.text('×'));
       expect(deleted, equals('yg1'));
+    });
+
+    testWidgets(
+      'expanded banner ✎ button enters edit mode, SAVE pill calls onRename',
+      (tester) async {
+        String? renamedId;
+        String? renamedTitle;
+        await tester.pumpWidget(
+          _wrap(
+            YearBanner(
+              yearGoal: _goal,
+              categoryName: 'Body',
+              onToggle: (_) {},
+              onDelete: (_) {},
+              onRename: (id, title) {
+                renamedId = id;
+                renamedTitle = title;
+              },
+            ),
+          ),
+        );
+        // Enter edit mode via the ✎ pencil button.
+        await tester.tap(find.text('✎'));
+        await tester.pumpAndSettle();
+        // Editing UI is visible; pencil and × are hidden.
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.text('SAVE'), findsOneWidget);
+        expect(find.text('CANCEL'), findsOneWidget);
+        expect(find.text('✎'), findsNothing);
+        expect(find.text('×'), findsNothing);
+        // Edit the title and save.
+        await tester.enterText(find.byType(TextField), 'Run two marathons');
+        await tester.tap(find.text('SAVE'));
+        await tester.pumpAndSettle();
+        expect(renamedId, equals('yg1'));
+        expect(renamedTitle, equals('Run two marathons'));
+        // Edit UI is gone.
+        expect(find.byType(TextField), findsNothing);
+      },
+    );
+
+    testWidgets('CANCEL pill exits edit mode without calling onRename', (
+      tester,
+    ) async {
+      var renameCalls = 0;
+      await tester.pumpWidget(
+        _wrap(
+          YearBanner(
+            yearGoal: _goal,
+            categoryName: 'Body',
+            onToggle: (_) {},
+            onDelete: (_) {},
+            onRename: (_, __) => renameCalls++,
+          ),
+        ),
+      );
+      await tester.tap(find.text('✎'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'will be discarded');
+      await tester.tap(find.text('CANCEL'));
+      await tester.pumpAndSettle();
+      expect(renameCalls, equals(0));
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('Run a marathon'), findsOneWidget);
     });
 
     testWidgets('collapsed banner calls onToggle when tapped', (tester) async {
@@ -120,6 +189,7 @@ void main() {
             categoryName: 'Skill',
             onToggle: (id) => toggled = id,
             onDelete: (_) {},
+            onRename: (_, __) {},
           ),
         ),
       );

@@ -11,6 +11,7 @@ class YearBanner extends StatelessWidget {
     required this.categoryName,
     required this.onToggle,
     required this.onDelete,
+    required this.onRename,
   });
 
   /// Null means no year goal exists for this category.
@@ -18,6 +19,7 @@ class YearBanner extends StatelessWidget {
   final String categoryName;
   final ValueChanged<String> onToggle;
   final ValueChanged<String> onDelete;
+  final void Function(String id, String title) onRename;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,7 @@ class YearBanner extends StatelessWidget {
         yearGoal: yg,
         onToggle: () => onToggle(yg.id),
         onDelete: () => onDelete(yg.id),
+        onRename: (title) => onRename(yg.id, title),
       );
     }
     return YearBannerCollapsed(yearGoal: yg, onToggle: () => onToggle(yg.id));

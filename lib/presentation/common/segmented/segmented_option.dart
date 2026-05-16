@@ -39,6 +39,7 @@ class SegmentedOption<T> extends StatelessWidget {
         ),
         child: Text(
           data.label,
+          textAlign: TextAlign.center,
           style: AtelierTypography.monoLabel.copyWith(
             color: active ? p.bg : p.sub,
           ),

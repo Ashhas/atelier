@@ -14,14 +14,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key, required this.goalCategoryId});
 
   final String goalCategoryId;
 
   @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  String? _expandedGoalId;
+
+  void _toggleExpandedGoal(String id) {
+    setState(() {
+      _expandedGoalId = _expandedGoalId == id ? null : id;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
+    final goalCategoryId = widget.goalCategoryId;
 
     final categoriesState = context.watch<GoalCategoriesCubit>().state;
     final goalsState = context.watch<GoalsCubit>().state;
@@ -51,7 +65,7 @@ class DetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(
                   left: AtelierSpacing.xl,
                   right: AtelierSpacing.xl,
-                  bottom: AtelierSpacing.x4l,
+                  bottom: AtelierSpacing.x4l + AtelierSpacing.x2l,
                 ),
                 children: [
                   if (yearGoals.isEmpty)
@@ -62,6 +76,9 @@ class DetailScreen extends StatelessWidget {
                           context.read<YearGoalsCubit>().toggleExpanded(id),
                       onDelete: (id) =>
                           context.read<YearGoalsCubit>().delete(id),
+                      onRename: (id, title) => context
+                          .read<YearGoalsCubit>()
+                          .rename(id: id, title: title),
                     )
                   else
                     for (final yg in yearGoals) ...[
@@ -73,6 +90,9 @@ class DetailScreen extends StatelessWidget {
                             context.read<YearGoalsCubit>().toggleExpanded(id),
                         onDelete: (id) =>
                             context.read<YearGoalsCubit>().delete(id),
+                        onRename: (id, title) => context
+                            .read<YearGoalsCubit>()
+                            .rename(id: id, title: title),
                       ),
                       const SizedBox(height: AtelierSpacing.base),
                     ],
@@ -85,6 +105,8 @@ class DetailScreen extends StatelessWidget {
                       (g) => GoalRow(
                         key: ValueKey(g.id),
                         goal: g,
+                        isExpanded: _expandedGoalId == g.id,
+                        onToggleExpanded: () => _toggleExpandedGoal(g.id),
                         onToggleStar: () =>
                             context.read<GoalsCubit>().toggleStar(g.id),
                         onRename: (title) => context.read<GoalsCubit>().rename(

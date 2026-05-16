@@ -7,28 +7,24 @@ import 'package:flutter/material.dart';
 /// Shows the year-goal preview inside a pocket card.
 ///
 /// Prototype: dashed border-bottom 1px rule, padding 0 4px 6px,
-/// year label fontSize 8 mono uppercase letterSpacing 1.6,
+/// "NORTH STAR" eyebrow fontSize 8 mono uppercase letterSpacing 1.6,
 /// year-goal titles Fraunces italic 12 color sub, ellipsis on overflow.
-/// Shows up to 2 expanded year-goal titles; if none shows "no `YYYY` goal".
-/// The displayed year reads from [now] (defaults to the system clock).
+/// Shows up to 2 expanded year-goal titles; if none, shows "NO NORTH STAR".
 class PocketYearPreview extends StatelessWidget {
   const PocketYearPreview({
     super.key,
     required this.yearGoalCount,
     required this.expandedYearGoals,
     required this.collapsedCount,
-    this.now,
   });
 
   final int yearGoalCount;
   final List<YearGoal> expandedYearGoals;
   final int collapsedCount;
-  final DateTime? now;
 
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
-    final year = (now ?? DateTime.now()).year;
     final visible = expandedYearGoals.take(2).toList();
     final overflowCount = expandedYearGoals.length > 2
         ? expandedYearGoals.length - 2
@@ -56,7 +52,7 @@ class PocketYearPreview extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '$year',
+                yearGoalCount == 0 ? 'NO NORTH STAR' : 'NORTH STAR',
                 style: AtelierTypography.monoMicro.copyWith(
                   color: c.mute,
                   fontSize: 8,
@@ -77,22 +73,11 @@ class PocketYearPreview extends StatelessWidget {
                 ),
             ],
           ),
-          // Breathing room between the small-caps year label row and the
-          // year-goal titles below — without it the eyebrow and the first
-          // goal title visually hug.
-          const SizedBox(height: AtelierSpacing.sm),
-          if (yearGoalCount == 0)
-            Padding(
-              padding: const EdgeInsets.only(top: AtelierSpacing.sm),
-              child: Text(
-                'NO $year GOAL',
-                style: AtelierTypography.monoMicro.copyWith(
-                  color: c.mute,
-                  letterSpacing: 1.4,
-                ),
-              ),
-            )
-          else ...[
+          if (yearGoalCount > 0) ...[
+            // Breathing room between the small-caps eyebrow and the
+            // year-goal titles below — without it the label and the first
+            // goal title visually hug.
+            const SizedBox(height: AtelierSpacing.sm),
             ...visible.map(
               (yg) => Text(
                 '•  ${yg.title}',

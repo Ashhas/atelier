@@ -25,6 +25,15 @@ on:
           - release
           - profile
           - debug
+      release:
+        type: choice
+        description: 'Publish a GitHub Release? (independent of build_mode above)'
+        required: true
+        default: 'none'
+        options:
+          - none
+          - release-debug
+          - release-prod
 
 concurrency:
   group: build-${{ github.ref }}
@@ -42,6 +51,11 @@ jobs:
       build_version: ${{ steps.version.outputs.build_version }}
       build_android: ${{ steps.platform.outputs.build_android }}
       build_ios: ${{ steps.platform.outputs.build_ios }}
+      do_release: ${{ steps.release.outputs.do_release }}
+      release_tag: ${{ steps.release.outputs.release_tag }}
+      release_name: ${{ steps.release.outputs.release_name }}
+      release_kind: ${{ steps.release.outputs.release_kind }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -68,6 +82,45 @@ jobs:
         run: |
           CURRENT_VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
           echo "build_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+      # Resolve the release input into concrete tag/name/flags so downstream
+      # jobs don't have to re-parse it. Prod tags are strict (vX.Y.Z) so a
+      # re-run with the same pubspec version will fail — by design. Debug
+      # tags carry the run number, so iterating on bug-test builds is cheap.
+      - name: Resolve release metadata
+        id: release
+        env:
+          RELEASE_CHOICE: ${{ github.event.inputs.release }}
+          RAW_VERSION: ${{ steps.version.outputs.build_version }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          # pubspec version looks like "1.0.0+3"; strip the "+build" suffix
+          # because git tags can't carry a "+" through most tooling.
+          SEMVER="${RAW_VERSION%%+*}"
+
+          case "$RELEASE_CHOICE" in
+            release-prod)
+              echo "do_release=true" >> "$GITHUB_OUTPUT"
+              echo "release_kind=prod" >> "$GITHUB_OUTPUT"
+              echo "release_tag=v${SEMVER}" >> "$GITHUB_OUTPUT"
+              echo "release_name=v${SEMVER}" >> "$GITHUB_OUTPUT"
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+              ;;
+            release-debug)
+              echo "do_release=true" >> "$GITHUB_OUTPUT"
+              echo "release_kind=debug" >> "$GITHUB_OUTPUT"
+              echo "release_tag=v${SEMVER}-debug.${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+              echo "release_name=v${SEMVER} (debug #${RUN_NUMBER})" >> "$GITHUB_OUTPUT"
+              echo "prerelease=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "do_release=false" >> "$GITHUB_OUTPUT"
+              echo "release_kind=" >> "$GITHUB_OUTPUT"
+              echo "release_tag=" >> "$GITHUB_OUTPUT"
+              echo "release_name=" >> "$GITHUB_OUTPUT"
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
   build-android:
     name: Build Android APK
@@ -224,3 +277,117 @@ jobs:
           name: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}
           path: atelier-ios-${{ needs.setup.outputs.build_version }}-${{ env.ARTIFACT_SUFFIX }}.zip
           retention-days: 14
+
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [setup, build-android, build-ios]
+    # Skipped jobs report `result: skipped` (not failure), so this triggers
+    # whenever the user picked a release option AND neither platform job
+    # actually failed. A skipped iOS build on an Android-only run is fine.
+    if: >-
+      always() &&
+      needs.setup.outputs.do_release == 'true' &&
+      needs.build-android.result != 'failure' &&
+      needs.build-ios.result != 'failure'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          # Full history so we can walk back to the previous release tag for
+          # the changelog. Default fetch-depth: 1 would leave us blind.
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List artifacts for release
+        run: ls -la dist/
+
+      # Walk back to the most recent tag of the SAME kind (prod vs debug) so
+      # the changelog reflects what changed within that release channel —
+      # debug notes don't get polluted with intervening prod releases and
+      # vice versa.
+      - name: Generate changelog
+        id: changelog
+        env:
+          RELEASE_KIND: ${{ needs.setup.outputs.release_kind }}
+          RELEASE_TAG: ${{ needs.setup.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$RELEASE_KIND" == "prod" ]]; then
+            # Prod tags are plain SemVer: v1.0.0 — no pre-release suffix.
+            PREV_TAG=$(git tag --list 'v*' --sort=-v:refname \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | grep -v "^${RELEASE_TAG}$" \
+              | head -n 1 || true)
+          else
+            # Debug tags: v1.0.0-debug.<run_number>.
+            PREV_TAG=$(git tag --list 'v*-debug.*' --sort=-v:refname \
+              | grep -v "^${RELEASE_TAG}$" \
+              | head -n 1 || true)
+          fi
+
+          {
+            echo "changelog<<__EOF_CHANGELOG__"
+            if [[ -z "$PREV_TAG" ]]; then
+              echo "Initial ${RELEASE_KIND} release."
+            else
+              echo "Changes since \`${PREV_TAG}\`:"
+              echo ""
+              git log "${PREV_TAG}..HEAD" --pretty=format:'- %s (%h)' --no-merges
+            fi
+            echo ""
+            echo "__EOF_CHANGELOG__"
+          } >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$PREV_TAG" ]]; then
+            echo "prev_tag=${PREV_TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compose release notes
+        id: notes
+        env:
+          BUILD_MODE: ${{ github.event.inputs.build_mode }}
+          PLATFORMS: ${{ github.event.inputs.platforms }}
+          RELEASE_KIND: ${{ needs.setup.outputs.release_kind }}
+          PREV_TAG: ${{ steps.changelog.outputs.prev_tag }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+        run: |
+          set -euo pipefail
+          {
+            echo "body<<__EOF_BODY__"
+            echo "**Channel:** ${RELEASE_KIND}"
+            echo "**Build mode:** ${BUILD_MODE}"
+            echo "**Platforms:** ${PLATFORMS}"
+            if [[ -n "${PREV_TAG}" ]]; then
+              echo "**Previous tag:** \`${PREV_TAG}\`"
+            fi
+            echo ""
+            echo "## Changelog"
+            echo ""
+            echo "${CHANGELOG}"
+            echo "__EOF_BODY__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.setup.outputs.release_tag }}
+          name: ${{ needs.setup.outputs.release_name }}
+          body: ${{ steps.notes.outputs.body }}
+          prerelease: ${{ needs.setup.outputs.prerelease }}
+          # Strict: fails if the tag already exists. For prod that's the
+          # safety we want; for debug, the run-number suffix in the tag
+          # guarantees uniqueness so this won't actually trip.
+          fail_on_unmatched_files: true
+          files: |
+            dist/**/*.apk
+            dist/**/*.zip

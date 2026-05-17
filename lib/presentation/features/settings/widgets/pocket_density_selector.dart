@@ -179,16 +179,20 @@ class _DensityPreview extends StatelessWidget {
 
   static final _now = DateTime(2026, 5, 12);
 
+  // Deliberately long titles so the year-line clamp difference is
+  // visible: at the 200px preview width these wrap to 3+ lines, which
+  // makes Compact (1 line, truncated) vs Standard (2 lines) vs
+  // Expanded (Full) read clearly.
   static final _yearGoals = <YearGoal>[
     const YearGoal(
       id: '_preview-y1',
       goalCategoryId: '_preview',
-      title: 'Run a sub-22 5K this year',
+      title: 'Run a sub-22 5K and finish at least one half-marathon this year',
     ),
     const YearGoal(
       id: '_preview-y2',
       goalCategoryId: '_preview',
-      title: 'Pull-up: bodyweight + 20kg',
+      title: 'Hit a strict pull-up at bodyweight + 20kg by the end of December',
     ),
   ];
 

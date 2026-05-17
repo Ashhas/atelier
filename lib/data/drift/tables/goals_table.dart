@@ -13,6 +13,10 @@ class GoalsTable extends Table {
   BoolColumn get starred => boolean().withDefault(const Constant(false))();
   DateTimeColumn get addedAt => dateTime()();
 
+  /// Manual per-category sort key. Backfilled from (starred desc, addedAt
+  /// asc) on schema upgrade so existing data preserves its prior ordering.
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 

@@ -376,6 +376,18 @@ class $GoalsTableTable extends GoalsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -383,6 +395,7 @@ class $GoalsTableTable extends GoalsTable
     title,
     starred,
     addedAt,
+    sortOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -434,6 +447,12 @@ class $GoalsTableTable extends GoalsTable
     } else if (isInserting) {
       context.missing(_addedAtMeta);
     }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
     return context;
   }
 
@@ -463,6 +482,10 @@ class $GoalsTableTable extends GoalsTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}added_at'],
       )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
     );
   }
 
@@ -478,12 +501,17 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
   final String title;
   final bool starred;
   final DateTime addedAt;
+
+  /// Manual per-category sort key. Backfilled from (starred desc, addedAt
+  /// asc) on schema upgrade so existing data preserves its prior ordering.
+  final int sortOrder;
   const GoalRow({
     required this.id,
     required this.goalCategoryId,
     required this.title,
     required this.starred,
     required this.addedAt,
+    required this.sortOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -493,6 +521,7 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
     map['title'] = Variable<String>(title);
     map['starred'] = Variable<bool>(starred);
     map['added_at'] = Variable<DateTime>(addedAt);
+    map['sort_order'] = Variable<int>(sortOrder);
     return map;
   }
 
@@ -503,6 +532,7 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
       title: Value(title),
       starred: Value(starred),
       addedAt: Value(addedAt),
+      sortOrder: Value(sortOrder),
     );
   }
 
@@ -517,6 +547,7 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
       title: serializer.fromJson<String>(json['title']),
       starred: serializer.fromJson<bool>(json['starred']),
       addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
   @override
@@ -528,6 +559,7 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
       'title': serializer.toJson<String>(title),
       'starred': serializer.toJson<bool>(starred),
       'addedAt': serializer.toJson<DateTime>(addedAt),
+      'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
 
@@ -537,12 +569,14 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
     String? title,
     bool? starred,
     DateTime? addedAt,
+    int? sortOrder,
   }) => GoalRow(
     id: id ?? this.id,
     goalCategoryId: goalCategoryId ?? this.goalCategoryId,
     title: title ?? this.title,
     starred: starred ?? this.starred,
     addedAt: addedAt ?? this.addedAt,
+    sortOrder: sortOrder ?? this.sortOrder,
   );
   GoalRow copyWithCompanion(GoalsTableCompanion data) {
     return GoalRow(
@@ -553,6 +587,7 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
       title: data.title.present ? data.title.value : this.title,
       starred: data.starred.present ? data.starred.value : this.starred,
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
   }
 
@@ -563,13 +598,15 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
           ..write('goalCategoryId: $goalCategoryId, ')
           ..write('title: $title, ')
           ..write('starred: $starred, ')
-          ..write('addedAt: $addedAt')
+          ..write('addedAt: $addedAt, ')
+          ..write('sortOrder: $sortOrder')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, goalCategoryId, title, starred, addedAt);
+  int get hashCode =>
+      Object.hash(id, goalCategoryId, title, starred, addedAt, sortOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -578,7 +615,8 @@ class GoalRow extends DataClass implements Insertable<GoalRow> {
           other.goalCategoryId == this.goalCategoryId &&
           other.title == this.title &&
           other.starred == this.starred &&
-          other.addedAt == this.addedAt);
+          other.addedAt == this.addedAt &&
+          other.sortOrder == this.sortOrder);
 }
 
 class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
@@ -587,6 +625,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
   final Value<String> title;
   final Value<bool> starred;
   final Value<DateTime> addedAt;
+  final Value<int> sortOrder;
   final Value<int> rowid;
   const GoalsTableCompanion({
     this.id = const Value.absent(),
@@ -594,6 +633,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
     this.title = const Value.absent(),
     this.starred = const Value.absent(),
     this.addedAt = const Value.absent(),
+    this.sortOrder = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   GoalsTableCompanion.insert({
@@ -602,6 +642,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
     required String title,
     this.starred = const Value.absent(),
     required DateTime addedAt,
+    this.sortOrder = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        goalCategoryId = Value(goalCategoryId),
@@ -613,6 +654,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
     Expression<String>? title,
     Expression<bool>? starred,
     Expression<DateTime>? addedAt,
+    Expression<int>? sortOrder,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -621,6 +663,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
       if (title != null) 'title': title,
       if (starred != null) 'starred': starred,
       if (addedAt != null) 'added_at': addedAt,
+      if (sortOrder != null) 'sort_order': sortOrder,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -631,6 +674,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
     Value<String>? title,
     Value<bool>? starred,
     Value<DateTime>? addedAt,
+    Value<int>? sortOrder,
     Value<int>? rowid,
   }) {
     return GoalsTableCompanion(
@@ -639,6 +683,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
       title: title ?? this.title,
       starred: starred ?? this.starred,
       addedAt: addedAt ?? this.addedAt,
+      sortOrder: sortOrder ?? this.sortOrder,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -661,6 +706,9 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
     if (addedAt.present) {
       map['added_at'] = Variable<DateTime>(addedAt.value);
     }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -675,6 +723,7 @@ class GoalsTableCompanion extends UpdateCompanion<GoalRow> {
           ..write('title: $title, ')
           ..write('starred: $starred, ')
           ..write('addedAt: $addedAt, ')
+          ..write('sortOrder: $sortOrder, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1441,6 +1490,7 @@ typedef $$GoalsTableTableCreateCompanionBuilder =
       required String title,
       Value<bool> starred,
       required DateTime addedAt,
+      Value<int> sortOrder,
       Value<int> rowid,
     });
 typedef $$GoalsTableTableUpdateCompanionBuilder =
@@ -1450,6 +1500,7 @@ typedef $$GoalsTableTableUpdateCompanionBuilder =
       Value<String> title,
       Value<bool> starred,
       Value<DateTime> addedAt,
+      Value<int> sortOrder,
       Value<int> rowid,
     });
 
@@ -1509,6 +1560,11 @@ class $$GoalsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$GoalCategoriesTableTableFilterComposer get goalCategoryId {
     final $$GoalCategoriesTableTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -1562,6 +1618,11 @@ class $$GoalsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$GoalCategoriesTableTableOrderingComposer get goalCategoryId {
     final $$GoalCategoriesTableTableOrderingComposer composer =
         $composerBuilder(
@@ -1607,6 +1668,9 @@ class $$GoalsTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get addedAt =>
       $composableBuilder(column: $table.addedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
   $$GoalCategoriesTableTableAnnotationComposer get goalCategoryId {
     final $$GoalCategoriesTableTableAnnotationComposer composer =
@@ -1666,6 +1730,7 @@ class $$GoalsTableTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<bool> starred = const Value.absent(),
                 Value<DateTime> addedAt = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => GoalsTableCompanion(
                 id: id,
@@ -1673,6 +1738,7 @@ class $$GoalsTableTableTableManager
                 title: title,
                 starred: starred,
                 addedAt: addedAt,
+                sortOrder: sortOrder,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1682,6 +1748,7 @@ class $$GoalsTableTableTableManager
                 required String title,
                 Value<bool> starred = const Value.absent(),
                 required DateTime addedAt,
+                Value<int> sortOrder = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => GoalsTableCompanion.insert(
                 id: id,
@@ -1689,6 +1756,7 @@ class $$GoalsTableTableTableManager
                 title: title,
                 starred: starred,
                 addedAt: addedAt,
+                sortOrder: sortOrder,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

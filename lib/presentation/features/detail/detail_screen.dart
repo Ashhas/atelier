@@ -61,65 +61,120 @@ class _DetailScreenState extends State<DetailScreen> {
               onBack: () => context.canPop() ? context.pop() : context.go('/'),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(
-                  left: AtelierSpacing.xl,
-                  right: AtelierSpacing.xl,
-                  bottom: AtelierSpacing.x4l + AtelierSpacing.x2l,
-                ),
-                children: [
-                  if (yearGoals.isEmpty)
-                    YearBanner(
-                      yearGoal: null,
-                      categoryName: categoryName,
-                      onToggle: (id) =>
-                          context.read<YearGoalsCubit>().toggleExpanded(id),
-                      onDelete: (id) =>
-                          context.read<YearGoalsCubit>().delete(id),
-                      onRename: (id, title) => context
-                          .read<YearGoalsCubit>()
-                          .rename(id: id, title: title),
-                    )
-                  else
-                    for (final yg in yearGoals) ...[
-                      YearBanner(
-                        key: ValueKey(yg.id),
-                        yearGoal: yg,
-                        categoryName: categoryName,
-                        onToggle: (id) =>
-                            context.read<YearGoalsCubit>().toggleExpanded(id),
-                        onDelete: (id) =>
-                            context.read<YearGoalsCubit>().delete(id),
-                        onRename: (id, title) => context
-                            .read<YearGoalsCubit>()
-                            .rename(id: id, title: title),
-                      ),
-                      const SizedBox(height: AtelierSpacing.base),
-                    ],
-                  const SizedBox(height: AtelierSpacing.xl + AtelierSpacing.md),
-                  const DetailSectionHeader(),
-                  if (goals.isEmpty)
-                    const GoalsEmptyState()
-                  else
-                    for (final g in goals) ...[
-                      GoalRow(
-                        key: ValueKey(g.id),
-                        goal: g,
-                        isExpanded: _expandedGoalId == g.id,
-                        onToggleExpanded: () => _toggleExpandedGoal(g.id),
-                        onToggleStar: () =>
-                            context.read<GoalsCubit>().toggleStar(g.id),
-                        onRename: (title) => context.read<GoalsCubit>().rename(
-                          id: g.id,
-                          title: title,
+              child: CustomScrollView(
+                slivers: [
+                  // Year banners + section header in a non-reorderable
+                  // sliver above the draggable goals list.
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AtelierSpacing.xl,
+                      0,
+                      AtelierSpacing.xl,
+                      0,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        if (yearGoals.isEmpty)
+                          YearBanner(
+                            yearGoal: null,
+                            categoryName: categoryName,
+                            onToggle: (id) => context
+                                .read<YearGoalsCubit>()
+                                .toggleExpanded(id),
+                            onDelete: (id) =>
+                                context.read<YearGoalsCubit>().delete(id),
+                            onRename: (id, title) => context
+                                .read<YearGoalsCubit>()
+                                .rename(id: id, title: title),
+                          )
+                        else
+                          for (final yg in yearGoals) ...[
+                            YearBanner(
+                              key: ValueKey(yg.id),
+                              yearGoal: yg,
+                              categoryName: categoryName,
+                              onToggle: (id) => context
+                                  .read<YearGoalsCubit>()
+                                  .toggleExpanded(id),
+                              onDelete: (id) =>
+                                  context.read<YearGoalsCubit>().delete(id),
+                              onRename: (id, title) => context
+                                  .read<YearGoalsCubit>()
+                                  .rename(id: id, title: title),
+                            ),
+                            const SizedBox(height: AtelierSpacing.base),
+                          ],
+                        const SizedBox(
+                          height: AtelierSpacing.xl + AtelierSpacing.md,
                         ),
-                        onDelete: () => context.read<GoalsCubit>().delete(g.id),
+                        const DetailSectionHeader(),
+                        if (goals.isEmpty) const GoalsEmptyState(),
+                      ]),
+                    ),
+                  ),
+                  // Goals as a long-press reorderable sliver. Drag start
+                  // is delayed (~500ms) so taps and short presses still
+                  // route through the row's own gesture handlers
+                  // (expand, star, edit).
+                  if (goals.isNotEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AtelierSpacing.xl,
                       ),
-                      // Small gap so adjacent rows with filled backgrounds
-                      // (starred = p.starBg, expanded = p.chip) don't visually
-                      // weld into one pill.
-                      const SizedBox(height: AtelierSpacing.sm),
-                    ],
+                      sliver: SliverReorderableList(
+                        itemCount: goals.length,
+                        itemBuilder: (context, index) {
+                          final g = goals[index];
+                          // Wrap in DelayedDragStart so the long-press
+                          // gesture initiates the reorder; ordinary taps
+                          // still reach the GoalRow underneath.
+                          return ReorderableDelayedDragStartListener(
+                            key: ValueKey(g.id),
+                            index: index,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AtelierSpacing.sm,
+                              ),
+                              child: GoalRow(
+                                goal: g,
+                                isExpanded: _expandedGoalId == g.id,
+                                onToggleExpanded: () =>
+                                    _toggleExpandedGoal(g.id),
+                                onToggleStar: () =>
+                                    context.read<GoalsCubit>().toggleStar(g.id),
+                                onRename: (title) =>
+                                    context.read<GoalsCubit>().rename(
+                                      id: g.id,
+                                      title: title,
+                                    ),
+                                onDelete: () =>
+                                    context.read<GoalsCubit>().delete(g.id),
+                              ),
+                            ),
+                          );
+                        },
+                        onReorder: (oldIndex, newIndex) {
+                          // ReorderableList's newIndex semantics: when
+                          // dragging down, newIndex is one past the target
+                          // slot. Normalise to a "move from A to B" model.
+                          var dest = newIndex;
+                          if (newIndex > oldIndex) dest -= 1;
+                          final ids = goals.map((g) => g.id).toList();
+                          final moved = ids.removeAt(oldIndex);
+                          ids.insert(dest, moved);
+                          context.read<GoalsCubit>().reorder(
+                            goalCategoryId: goalCategoryId,
+                            orderedIds: ids,
+                          );
+                        },
+                      ),
+                    ),
+                  // Bottom padding so the last row clears the AddBar.
+                  const SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: AtelierSpacing.x4l + AtelierSpacing.x2l,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -50,5 +50,18 @@ class GoalsCubit extends Cubit<GoalsState> {
     await load();
   }
 
+  /// Persists a new ordering for goals in [goalCategoryId]. The list is the
+  /// full set of goal ids in their desired top-to-bottom order.
+  Future<void> reorder({
+    required String goalCategoryId,
+    required List<String> orderedIds,
+  }) async {
+    await _repo.reorder(
+      goalCategoryId: goalCategoryId,
+      orderedIds: orderedIds,
+    );
+    await load();
+  }
+
   Future<void> reload() => load();
 }

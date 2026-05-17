@@ -19,15 +19,52 @@ class AtelierDatabase extends _$AtelierDatabase {
   AtelierDatabase.withExecutor(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // v2 adds goals.sort_order. Drift's addColumn issues
+        // ALTER TABLE ... ADD COLUMN with the column's declared default,
+        // so existing rows land with sort_order = 0. We then backfill
+        // per-category orderings from the previous implicit sort
+        // (starred desc, addedAt asc, id asc) so users don't see their
+        // list shuffle on first launch after upgrade.
+        await m.addColumn(goalsTable, goalsTable.sortOrder);
+        await _backfillGoalsSortOrder();
+      }
+    },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  Future<void> _backfillGoalsSortOrder() async {
+    // Fetch all rows, group by category, assign 0..N-1 in the existing
+    // implicit-sort order. Writing one UPDATE per row is fine here —
+    // this runs once per device on upgrade.
+    final all = await (select(goalsTable)..orderBy([
+          (t) => OrderingTerm.asc(t.goalCategoryId),
+          (t) => OrderingTerm.desc(t.starred),
+          (t) => OrderingTerm.asc(t.addedAt),
+          (t) => OrderingTerm.asc(t.id),
+        ]))
+        .get();
+
+    String? currentCategory;
+    var index = 0;
+    for (final row in all) {
+      if (row.goalCategoryId != currentCategory) {
+        currentCategory = row.goalCategoryId;
+        index = 0;
+      }
+      await (update(goalsTable)..where((t) => t.id.equals(row.id)))
+          .write(GoalsTableCompanion(sortOrder: Value(index)));
+      index += 1;
+    }
+  }
 }
 
 LazyDatabase _open() {

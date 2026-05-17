@@ -199,9 +199,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // The Open add-slot pocket renders the empty-state label "OPEN · ADD"
+    // The add-slot pocket renders the empty-state label "NEW · ADD"
     // (uppercase with bullet). Tap it to open the sheet.
-    await tester.tap(find.text('OPEN · ADD'));
+    await tester.tap(find.text('NEW · ADD'));
     await tester.pumpAndSettle();
 
     // Sheet shows a TextField with the hint and an ADD button.

@@ -1,3 +1,4 @@
+import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/domain/models/year_goal.dart';
@@ -11,12 +12,14 @@ import 'package:atelier/presentation/features/home/state/manage_mode_cubit.dart'
 import 'package:atelier/presentation/features/home/state/manage_mode_state.dart';
 import 'package:atelier/presentation/features/home/widgets/grid/pocket_grid.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockGoalCategoriesCubit extends Mock implements GoalCategoriesCubit {}
 
@@ -25,6 +28,8 @@ class _MockManageModeCubit extends Mock implements ManageModeCubit {}
 class _MockGoalsCubit extends Mock implements GoalsCubit {}
 
 class _MockYearGoalsCubit extends Mock implements YearGoalsCubit {}
+
+late SettingsCubit _settingsCubit;
 
 Widget _wrap(
   Widget child, {
@@ -41,6 +46,7 @@ Widget _wrap(
         BlocProvider<ManageModeCubit>.value(value: manage),
         BlocProvider<GoalsCubit>.value(value: goals),
         BlocProvider<YearGoalsCubit>.value(value: yearGoals),
+        BlocProvider<SettingsCubit>.value(value: _settingsCubit),
       ],
       child: child,
     ),
@@ -53,7 +59,12 @@ void main() {
   late _MockGoalsCubit goalsCubit;
   late _MockYearGoalsCubit yearGoalsCubit;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    _settingsCubit = SettingsCubit(PrefsSettingsRepository(prefs));
+    await _settingsCubit.load();
+
     categoriesCubit = _MockGoalCategoriesCubit();
     manageCubit = _MockManageModeCubit();
     goalsCubit = _MockGoalsCubit();
@@ -145,6 +156,7 @@ void main() {
               BlocProvider<ManageModeCubit>.value(value: manageCubit),
               BlocProvider<GoalsCubit>.value(value: goalsCubit),
               BlocProvider<YearGoalsCubit>.value(value: yearGoalsCubit),
+              BlocProvider<SettingsCubit>.value(value: _settingsCubit),
             ],
             child: const Scaffold(body: PocketGrid()),
           ),
@@ -239,8 +251,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Work pocket should render the year-goal title and the month-goal title.
-      // Pocket year preview prefixes each title with '> ' as a quote mark.
-      expect(find.text('> Run a marathon'), findsOneWidget);
+      // Pocket year preview prefixes each title with '•  ' (bullet + 2 spaces).
+      expect(find.text('•  Run a marathon'), findsOneWidget);
       expect(find.text('Sub-25 5K'), findsOneWidget);
     },
   );

@@ -1,15 +1,26 @@
+import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket_goals_preview.dart';
 import 'package:atelier/presentation/features/home/widgets/pocket/pocket_remove_badge.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+late SettingsCubit _settingsCubit;
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AtelierTheme.light(),
-  home: Scaffold(body: child),
+  home: Scaffold(
+    body: BlocProvider<SettingsCubit>.value(
+      value: _settingsCubit,
+      child: child,
+    ),
+  ),
 );
 
 const _cat = GoalCategory(id: 'c1', name: 'Work', order: 0);
@@ -23,6 +34,13 @@ Goal _goal(String id, String title, {bool starred = false}) => Goal(
 );
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    _settingsCubit = SettingsCubit(PrefsSettingsRepository(prefs));
+    await _settingsCubit.load();
+  });
+
   group('Pocket §3.2', () {
     testWidgets('renders category name', (tester) async {
       await tester.pumpWidget(

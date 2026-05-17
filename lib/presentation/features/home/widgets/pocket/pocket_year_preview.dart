@@ -1,14 +1,18 @@
 import 'package:atelier/domain/models/year_goal.dart';
+import 'package:atelier/domain/models/enums/pocket_year_line_mode.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Shows the year-goal preview inside a pocket card.
 ///
 /// Prototype: dashed border-bottom 1px rule, padding 0 4px 6px,
 /// "NORTH STAR" eyebrow fontSize 8 mono uppercase letterSpacing 1.6,
-/// year-goal titles Fraunces italic 12 color sub, ellipsis on overflow.
+/// year-goal titles Fraunces italic 12 color sub. Title line count is
+/// driven by `SettingsCubit.pocketYearLineMode` (1 / 2 / full).
 /// Shows up to 2 expanded year-goal titles; if none, shows "NO NORTH STAR".
 class PocketYearPreview extends StatelessWidget {
   const PocketYearPreview({
@@ -25,6 +29,11 @@ class PocketYearPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    final lineMode = context
+        .select<SettingsCubit, PocketYearLineMode>(
+          (cubit) => cubit.state.settings.pocketYearLineMode,
+        );
+    final maxLines = lineMode.maxLines;
     final visible = expandedYearGoals.take(2).toList();
     final overflowCount = expandedYearGoals.length > 2
         ? expandedYearGoals.length - 2
@@ -85,8 +94,12 @@ class PocketYearPreview extends StatelessWidget {
                   color: c.sub,
                   fontSize: 12,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines: maxLines,
+                // Ellipsis only matters when there's a finite line cap;
+                // with maxLines: null the text wraps to whatever it needs.
+                overflow: maxLines == null
+                    ? TextOverflow.clip
+                    : TextOverflow.ellipsis,
               ),
             ),
             if (expandedYearGoals.isEmpty && collapsedCount > 0)

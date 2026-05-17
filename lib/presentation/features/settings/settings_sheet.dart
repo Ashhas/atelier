@@ -108,6 +108,11 @@ class _SettingsSheetState extends State<SettingsSheet> {
               ResetDataButton(
                 onTap: () => setState(() => _confirmingReset = true),
               ),
+            // Trailing breathing room — sits inside the scroll view (in
+            // addition to the system-nav-bar inset on the outer padding)
+            // so the last row clears comfortably when scrolled to the
+            // bottom rather than sitting flush against the safe area.
+            const SizedBox(height: AtelierSpacing.x4l + AtelierSpacing.x3l),
           ],
         ),
       ),

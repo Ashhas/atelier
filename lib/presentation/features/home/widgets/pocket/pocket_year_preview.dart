@@ -87,21 +87,33 @@ class PocketYearPreview extends StatelessWidget {
             // year-goal titles below — without it the label and the first
             // goal title visually hug.
             const SizedBox(height: AtelierSpacing.sm),
-            ...visible.map(
-              (yg) => Text(
-                '•  ${yg.title}',
-                style: AtelierTypography.serifBodyUpright.copyWith(
-                  color: c.sub,
-                  fontSize: 12,
-                ),
-                maxLines: maxLines,
-                // Ellipsis only matters when there's a finite line cap;
-                // with maxLines: null the text wraps to whatever it needs.
-                overflow: maxLines == null
-                    ? TextOverflow.clip
-                    : TextOverflow.ellipsis,
-              ),
-            ),
+            ...visible.map((yg) {
+              final titleStyle = AtelierTypography.serifBodyUpright.copyWith(
+                color: c.sub,
+                fontSize: 12,
+              );
+              // Bullet sits in its own column so wrapped lines hang to the
+              // title's indent instead of tucking under the '•'.
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 14,
+                    child: Text('•', style: titleStyle),
+                  ),
+                  Expanded(
+                    child: Text(
+                      yg.title,
+                      style: titleStyle,
+                      maxLines: maxLines,
+                      overflow: maxLines == null
+                          ? TextOverflow.clip
+                          : TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              );
+            }),
             if (expandedYearGoals.isEmpty && collapsedCount > 0)
               Padding(
                 padding: const EdgeInsets.only(top: AtelierSpacing.xs),

@@ -251,8 +251,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Work pocket should render the year-goal title and the month-goal title.
-      // Pocket year preview prefixes each title with '•  ' (bullet + 2 spaces).
-      expect(find.text('•  Run a marathon'), findsOneWidget);
+      // Pocket year preview renders the bullet as a sibling widget — the title
+      // text on its own.
+      expect(find.text('Run a marathon'), findsOneWidget);
       expect(find.text('Sub-25 5K'), findsOneWidget);
     },
   );

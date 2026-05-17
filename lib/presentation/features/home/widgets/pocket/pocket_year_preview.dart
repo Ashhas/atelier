@@ -1,5 +1,4 @@
 import 'package:atelier/domain/models/year_goal.dart';
-import 'package:atelier/domain/models/enums/pocket_year_line_mode.dart';
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
@@ -20,20 +19,26 @@ class PocketYearPreview extends StatelessWidget {
     required this.yearGoalCount,
     required this.expandedYearGoals,
     required this.collapsedCount,
+    this.maxLinesOverride,
   });
 
   final int yearGoalCount;
   final List<YearGoal> expandedYearGoals;
   final int collapsedCount;
 
+  /// Resolver that bypasses SettingsCubit when provided. Used by the
+  /// settings sheet's live preview, which is driven by local picker
+  /// state. Returning null means "Full" (unbounded).
+  final ValueGetter<int?>? maxLinesOverride;
+
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
-    final lineMode = context
-        .select<SettingsCubit, PocketYearLineMode>(
-          (cubit) => cubit.state.settings.pocketYearLineMode,
-        );
-    final maxLines = lineMode.maxLines;
+    final maxLines = maxLinesOverride != null
+        ? maxLinesOverride!()
+        : context.select<SettingsCubit, int?>(
+            (cubit) => cubit.state.settings.pocketYearLines,
+          );
     final visible = expandedYearGoals.take(2).toList();
     final overflowCount = expandedYearGoals.length > 2
         ? expandedYearGoals.length - 2

@@ -13,17 +13,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 ///
 /// Prototype: gap 5, borderRadius 8, padding 7px 10px, serifBody 12.5.
 class PocketGoalsPreview extends StatelessWidget {
-  const PocketGoalsPreview({super.key, required this.goals});
+  const PocketGoalsPreview({
+    super.key,
+    required this.goals,
+    this.limitOverride,
+  });
 
   final List<Goal> goals;
+
+  /// Resolver that bypasses SettingsCubit when provided. Used by the
+  /// settings sheet's live preview. Returning null means "All".
+  final ValueGetter<int?>? limitOverride;
 
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
-    final limit = context
-        .select<SettingsCubit, int?>(
-          (cubit) => cubit.state.settings.pocketGoalsPreviewCount.limit,
-        );
+    final limit = limitOverride != null
+        ? limitOverride!()
+        : context.select<SettingsCubit, int?>(
+            (cubit) => cubit.state.settings.pocketGoalsPreviewCount,
+          );
     // Starred first, then insertion order (spec §3.3)
     final sorted = [
       ...goals.where((g) => g.starred),

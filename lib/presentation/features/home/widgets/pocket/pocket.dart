@@ -33,6 +33,8 @@ class Pocket extends StatefulWidget {
     required this.onLongPress,
     this.expandedYearGoals = const [],
     this.collapsedYearCount = 0,
+    this.yearLinesOverride,
+    this.goalsLimitOverride,
   });
 
   final GoalCategory category;
@@ -44,6 +46,12 @@ class Pocket extends StatefulWidget {
   final VoidCallback onLongPress;
   final List<YearGoal> expandedYearGoals;
   final int collapsedYearCount;
+
+  /// Density overrides — when non-null, the embedded previews use these
+  /// values instead of reading from SettingsCubit. Used by the settings
+  /// sheet's live density preview.
+  final ValueGetter<int?>? yearLinesOverride;
+  final ValueGetter<int?>? goalsLimitOverride;
 
   @override
   State<Pocket> createState() => _PocketState();
@@ -133,12 +141,16 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
                         yearGoalCount: widget.yearGoalCount,
                         expandedYearGoals: widget.expandedYearGoals,
                         collapsedCount: widget.collapsedYearCount,
+                        maxLinesOverride: widget.yearLinesOverride,
                       ),
                       const SizedBox(height: AtelierSpacing.md),
                       if (isEmpty)
                         PocketEmptyState(isAddSlot: isAddSlot)
                       else
-                        PocketGoalsPreview(goals: widget.goalsPreview),
+                        PocketGoalsPreview(
+                          goals: widget.goalsPreview,
+                          limitOverride: widget.goalsLimitOverride,
+                        ),
                     ],
                   ),
                 ),
@@ -163,12 +175,16 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
                       yearGoalCount: widget.yearGoalCount,
                       expandedYearGoals: widget.expandedYearGoals,
                       collapsedCount: widget.collapsedYearCount,
+                      maxLinesOverride: widget.yearLinesOverride,
                     ),
                     const SizedBox(height: AtelierSpacing.md),
                     if (isEmpty)
                       PocketEmptyState(isAddSlot: isAddSlot)
                     else
-                      PocketGoalsPreview(goals: widget.goalsPreview),
+                      PocketGoalsPreview(
+                        goals: widget.goalsPreview,
+                        limitOverride: widget.goalsLimitOverride,
+                      ),
                   ],
                 ),
               ),

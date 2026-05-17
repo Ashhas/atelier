@@ -12,7 +12,9 @@ class Segmented<T> extends StatelessWidget {
     required this.onChanged,
   });
 
-  final T value;
+  /// Nullable so callers can express "no segment active" (e.g. a custom
+  /// configuration that doesn't match any preset).
+  final T? value;
   final List<SegmentedOptionData<T>> options;
   final ValueChanged<T> onChanged;
 

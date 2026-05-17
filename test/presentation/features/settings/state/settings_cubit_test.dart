@@ -1,8 +1,6 @@
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/app_settings.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
-import 'package:atelier/domain/models/enums/pocket_goals_preview_count.dart';
-import 'package:atelier/domain/models/enums/pocket_year_line_mode.dart';
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
 import 'package:flutter/material.dart';
@@ -56,35 +54,25 @@ void main() {
     expect(afterSetScale.last.settings.fontScale, FontScale.large);
   });
 
-  test('setPocketYearLineMode persists + emits', () async {
+  test('setPocketYearLines accepts both ints and null (Full)', () async {
     final cubit = SettingsCubit(repo);
-    final emitted = <SettingsState>[];
-    final sub = cubit.stream.listen(emitted.add);
     await cubit.load();
-    await cubit.setPocketYearLineMode(PocketYearLineMode.full);
-    await Future<void>.delayed(Duration.zero);
-    await sub.cancel();
-    final afterSet = emitted.skip(1).toList();
-    expect(afterSet, hasLength(1));
-    expect(
-      afterSet.last.settings.pocketYearLineMode,
-      PocketYearLineMode.full,
-    );
+
+    await cubit.setPocketYearLines(4);
+    expect(cubit.state.settings.pocketYearLines, 4);
+
+    await cubit.setPocketYearLines(null);
+    expect(cubit.state.settings.pocketYearLines, isNull);
   });
 
-  test('setPocketGoalsPreviewCount persists + emits', () async {
+  test('setPocketGoalsPreviewCount accepts both ints and null (All)', () async {
     final cubit = SettingsCubit(repo);
-    final emitted = <SettingsState>[];
-    final sub = cubit.stream.listen(emitted.add);
     await cubit.load();
-    await cubit.setPocketGoalsPreviewCount(PocketGoalsPreviewCount.five);
-    await Future<void>.delayed(Duration.zero);
-    await sub.cancel();
-    final afterSet = emitted.skip(1).toList();
-    expect(afterSet, hasLength(1));
-    expect(
-      afterSet.last.settings.pocketGoalsPreviewCount,
-      PocketGoalsPreviewCount.five,
-    );
+
+    await cubit.setPocketGoalsPreviewCount(7);
+    expect(cubit.state.settings.pocketGoalsPreviewCount, 7);
+
+    await cubit.setPocketGoalsPreviewCount(null);
+    expect(cubit.state.settings.pocketGoalsPreviewCount, isNull);
   });
 }

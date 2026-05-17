@@ -1,6 +1,4 @@
 import 'package:atelier/domain/models/enums/font_scale.dart';
-import 'package:atelier/domain/models/enums/pocket_goals_preview_count.dart';
-import 'package:atelier/domain/models/enums/pocket_year_line_mode.dart';
 import 'package:atelier/domain/repositories/settings_repository.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
 import 'package:flutter/material.dart';
@@ -28,15 +26,15 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(settings: updated));
   }
 
-  Future<void> setPocketYearLineMode(PocketYearLineMode mode) async {
-    final updated = state.settings.copyWith(pocketYearLineMode: mode);
+  /// `null` = unbounded ("Full"); otherwise 1..5 per the density spec.
+  Future<void> setPocketYearLines(int? lines) async {
+    final updated = state.settings.copyWith(pocketYearLines: lines);
     await _repo.write(updated);
     emit(state.copyWith(settings: updated));
   }
 
-  Future<void> setPocketGoalsPreviewCount(
-    PocketGoalsPreviewCount count,
-  ) async {
+  /// `null` = all goals; otherwise 1..15 per the density spec.
+  Future<void> setPocketGoalsPreviewCount(int? count) async {
     final updated = state.settings.copyWith(pocketGoalsPreviewCount: count);
     await _repo.write(updated);
     emit(state.copyWith(settings: updated));

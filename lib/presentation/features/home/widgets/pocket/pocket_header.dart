@@ -29,17 +29,23 @@ class PocketHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          Text(
-            name.toUpperCase(),
-            // Inter eyebrow — same heft + tracking as the mono variant
-            // it replaced, just on the body sans for a calmer feel.
-            style: AtelierTypography.sansLabel.copyWith(
-              color: c.sub,
-              fontSize: 11,
-              letterSpacing: 1.8,
+          // Expanded so long category names ellipsise instead of
+          // overflowing the narrow (~145px) pocket header column.
+          Expanded(
+            child: Text(
+              name.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              // Inter eyebrow — same heft + tracking as the mono variant
+              // it replaced, just on the body sans for a calmer feel.
+              style: AtelierTypography.sansLabel.copyWith(
+                color: c.sub,
+                fontSize: 11,
+                letterSpacing: 1.8,
+              ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: AtelierSpacing.sm),
           Text(
             countStr,
             style: AtelierTypography.monoMicro.copyWith(

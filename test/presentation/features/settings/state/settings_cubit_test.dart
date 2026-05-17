@@ -1,6 +1,7 @@
 import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/app_settings.dart';
 import 'package:atelier/domain/models/enums/font_scale.dart';
+import 'package:atelier/domain/models/enums/pocket_goals_preview_count.dart';
 import 'package:atelier/domain/models/enums/pocket_year_line_mode.dart';
 import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/presentation/features/settings/state/settings_state.dart';
@@ -68,6 +69,22 @@ void main() {
     expect(
       afterSet.last.settings.pocketYearLineMode,
       PocketYearLineMode.full,
+    );
+  });
+
+  test('setPocketGoalsPreviewCount persists + emits', () async {
+    final cubit = SettingsCubit(repo);
+    final emitted = <SettingsState>[];
+    final sub = cubit.stream.listen(emitted.add);
+    await cubit.load();
+    await cubit.setPocketGoalsPreviewCount(PocketGoalsPreviewCount.five);
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+    final afterSet = emitted.skip(1).toList();
+    expect(afterSet, hasLength(1));
+    expect(
+      afterSet.last.settings.pocketGoalsPreviewCount,
+      PocketGoalsPreviewCount.five,
     );
   });
 }

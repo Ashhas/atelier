@@ -1,5 +1,6 @@
 import 'package:atelier/presentation/features/settings/widgets/export_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/font_scale_selector.dart';
+import 'package:atelier/presentation/features/settings/widgets/pocket_goals_preview_count_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/pocket_year_line_mode_selector.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_button.dart';
 import 'package:atelier/presentation/features/settings/widgets/reset_data_confirm.dart';
@@ -73,6 +74,8 @@ class _SettingsSheetState extends State<SettingsSheet> {
           const FontScaleSelector(),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           const PocketYearLineModeSelector(),
+          const SizedBox(height: AtelierSpacing.x3l), // 22
+          const PocketGoalsPreviewCountSelector(),
           const SizedBox(height: AtelierSpacing.x3l), // 22
           // Divider
           Container(height: 1, color: c.rule),

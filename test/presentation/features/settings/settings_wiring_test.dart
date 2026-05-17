@@ -97,9 +97,18 @@ Widget _wrapWithHarness(_Harness h) => MaterialApp(
   ),
 );
 
+// Settings sheet has grown — default 600px viewport overflows.
+void _useTallViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 void main() {
   group('Gear button + SettingsSheet wiring §3.7', () {
     testWidgets('tapping gear button opens SettingsSheet', (tester) async {
+      _useTallViewport(tester);
       final h = await _buildHarness();
       addTearDown(h.dispose);
       await tester.pumpWidget(_wrapWithHarness(h));
@@ -114,6 +123,7 @@ void main() {
     testWidgets('reset: cubits reload to empty state and sheet closes', (
       tester,
     ) async {
+      _useTallViewport(tester);
       final h = await _buildHarness();
       addTearDown(h.dispose);
       await tester.pumpWidget(_wrapWithHarness(h));

@@ -1,12 +1,15 @@
 import 'package:atelier/domain/models/goal.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:atelier/theme/atelier_typography.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Shows up to 3 goals inside a pocket card; starred goals sort first.
-/// Starred rows use starBg/starBorder/starInk; normal rows use chip/rule/ink.
-/// If more than 3 goals exist, shows "+N more" overflow.
+/// Shows up to N goals inside a pocket card, where N is driven by
+/// `SettingsCubit.pocketGoalsPreviewCount` (3 / 5 / all). Starred goals sort
+/// first. Starred rows use starBg/starBorder/starInk; normal rows use
+/// chip/rule/ink. When the cap is exceeded, shows "+N more" overflow.
 ///
 /// Prototype: gap 5, borderRadius 8, padding 7px 10px, serifBody 12.5.
 class PocketGoalsPreview extends StatelessWidget {
@@ -17,13 +20,19 @@ class PocketGoalsPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
+    final limit = context
+        .select<SettingsCubit, int?>(
+          (cubit) => cubit.state.settings.pocketGoalsPreviewCount.limit,
+        );
     // Starred first, then insertion order (spec §3.3)
     final sorted = [
       ...goals.where((g) => g.starred),
       ...goals.where((g) => !g.starred),
     ];
-    final visible = sorted.take(3).toList();
-    final overflowCount = sorted.length > 3 ? sorted.length - 3 : 0;
+    final visible = limit == null ? sorted : sorted.take(limit).toList();
+    final overflowCount = limit != null && sorted.length > limit
+        ? sorted.length - limit
+        : 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

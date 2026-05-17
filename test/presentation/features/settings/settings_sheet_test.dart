@@ -33,9 +33,19 @@ Widget _wrap({required SettingsCubit cubit, VoidCallback? onReset}) =>
       ),
     );
 
+// Settings sheet has grown beyond the 600px default test viewport
+// (4 segmented controls + chrome + reset). Bump per-test.
+void _useTallViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 void main() {
   group('SettingsSheet §3.7', () {
     testWidgets('renders all child widgets', (tester) async {
+      _useTallViewport(tester);
       final cubit = await _makeCubit();
       await tester.pumpWidget(_wrap(cubit: cubit));
       await tester.pump();
@@ -49,6 +59,7 @@ void main() {
     testWidgets('tapping Reset all data shows ResetDataConfirm', (
       tester,
     ) async {
+      _useTallViewport(tester);
       final cubit = await _makeCubit();
       await tester.pumpWidget(_wrap(cubit: cubit));
       await tester.pump();
@@ -62,6 +73,7 @@ void main() {
     testWidgets('tapping CANCEL in confirm reverts to ResetDataButton', (
       tester,
     ) async {
+      _useTallViewport(tester);
       final cubit = await _makeCubit();
       await tester.pumpWidget(_wrap(cubit: cubit));
       await tester.pump();
@@ -75,6 +87,7 @@ void main() {
     });
 
     testWidgets('tapping RESET fires onReset callback', (tester) async {
+      _useTallViewport(tester);
       var resetFired = false;
       final cubit = await _makeCubit();
       await tester.pumpWidget(

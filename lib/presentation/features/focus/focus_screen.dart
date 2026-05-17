@@ -385,16 +385,7 @@ class _StarredCard extends StatelessWidget {
             for (final g in items)
               Padding(
                 padding: const EdgeInsets.only(bottom: AtelierSpacing.xs),
-                child: Text(
-                  g.title,
-                  style: AtelierTypography.serifTitleUpright.copyWith(
-                    color: p.starInk,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
-                    letterSpacing: -0.3,
-                  ),
-                ),
+                child: _StarredGoalLine(title: g.title, color: p.starInk),
               ),
           ],
         ),
@@ -436,6 +427,34 @@ class _EverythingElseSection extends StatelessWidget {
           ),
           const SizedBox(height: AtelierSpacing.lg),
         ],
+      ],
+    );
+  }
+}
+
+/// Bullet + title row inside a starred card. The bullet sits in its own
+/// fixed-width column so wrapped lines hang to the title's indent rather
+/// than tucking under the '•'.
+class _StarredGoalLine extends StatelessWidget {
+  const _StarredGoalLine({required this.title, required this.color});
+
+  final String title;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AtelierTypography.serifTitleUpright.copyWith(
+      color: color,
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      height: 1.25,
+      letterSpacing: -0.3,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(width: 18, child: Text('•', style: style)),
+        Expanded(child: Text(title, style: style)),
       ],
     );
   }

@@ -122,7 +122,11 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       PocketHeader(
-                        name: widget.category.name,
+                        // Add-slot is a UI affordance, not user data —
+                        // display "NEW" regardless of the stored name so
+                        // existing installs (which persist "Open") and
+                        // fresh installs read the same.
+                        name: isAddSlot ? 'New' : widget.category.name,
                         goalCount: widget.goalsPreview.length,
                       ),
                       PocketYearPreview(
@@ -152,7 +156,7 @@ class _PocketState extends State<Pocket> with SingleTickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     PocketHeader(
-                      name: widget.category.name,
+                      name: isAddSlot ? 'New' : widget.category.name,
                       goalCount: widget.goalsPreview.length,
                     ),
                     PocketYearPreview(

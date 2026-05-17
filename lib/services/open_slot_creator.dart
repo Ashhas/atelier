@@ -2,17 +2,20 @@ import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/domain/repositories/goal_category_repository.dart';
 import 'package:atelier/utils/uuid.dart';
 
-/// Orchestrates the creation/removal of the pinned `Open` add-slot pocket.
+/// Orchestrates the creation/removal of the pinned add-slot pocket
+/// (rendered as "NEW" in the UI; persisted under [_openName] for new
+/// installs, while older installs may still carry the prior "Open" name).
 ///
 /// First-launch invariant: `categories` is empty until the user adds their
-/// first pocket. At that moment we create both their pocket AND the Open slot.
-/// When they remove their last real pocket, we also remove the Open slot.
+/// first pocket. At that moment we create both their pocket AND the
+/// add-slot. When they remove their last real pocket, we also remove the
+/// add-slot.
 class OpenSlotCreator {
   OpenSlotCreator(this._categories);
 
   final GoalCategoryRepository _categories;
 
-  static const String _openName = 'Open';
+  static const String _openName = 'New';
 
   /// Creates the user's first pocket plus the Open add-slot. Idempotent in the
   /// sense that calling it on a non-empty store falls back to [addPocket].

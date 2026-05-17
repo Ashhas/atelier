@@ -32,7 +32,7 @@ void main() {
   });
 
   test(
-    'addPocket on empty creates first pocket + Open slot and re-emits',
+    'addPocket on empty creates first pocket + New slot and re-emits',
     () async {
       final cubit = GoalCategoriesCubit(repo, creator);
       final emitted = <GoalCategoriesState>[];
@@ -46,12 +46,12 @@ void main() {
       expect(afterAdd, hasLength(1));
       expect(afterAdd.last.categories.map((c) => c.name).toList(), [
         'Work',
-        'Open',
+        'New',
       ]);
     },
   );
 
-  test('removePocket on last real pocket removes Open too', () async {
+  test('removePocket on last real pocket removes New too', () async {
     final cubit = GoalCategoriesCubit(repo, creator);
     final emitted = <GoalCategoriesState>[];
     final sub = cubit.stream.listen(emitted.add);

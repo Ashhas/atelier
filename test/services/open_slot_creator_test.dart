@@ -17,7 +17,7 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('addFirstPocket creates the user pocket AND the Open slot', () async {
+  test('addFirstPocket creates the user pocket AND the New slot', () async {
     final created = await creator.addFirstPocket(name: 'Work');
 
     final rows = await repo.all();
@@ -26,24 +26,24 @@ void main() {
     expect(rows.first.name, 'Work');
     expect(rows.first.order, 0);
     expect(rows.first.isAddSlot, isFalse);
-    expect(rows.last.name, 'Open');
+    expect(rows.last.name, 'New');
     expect(rows.last.isAddSlot, isTrue);
     expect(rows.last.order, greaterThan(rows.first.order));
   });
 
-  test('addPocket on a non-empty store appends before the Open slot', () async {
+  test('addPocket on a non-empty store appends before the New slot', () async {
     await creator.addFirstPocket(name: 'Work');
     final body = await creator.addPocket(name: 'Body');
 
     final rows = await repo.all();
     final names = rows.map((r) => r.name).toList();
-    expect(names, ['Work', 'Body', 'Open']);
+    expect(names, ['Work', 'Body', 'New']);
     expect(rows.firstWhere((r) => r.id == body.id).order, 1);
     expect(rows.firstWhere((r) => r.isAddSlot).order, 2);
   });
 
   test(
-    'removePocket of the last real pocket also removes the Open slot',
+    'removePocket of the last real pocket also removes the New slot',
     () async {
       final work = await creator.addFirstPocket(name: 'Work');
       await creator.removePocket(work.id);
@@ -52,14 +52,14 @@ void main() {
   );
 
   test(
-    'removePocket when other real pockets remain keeps the Open slot',
+    'removePocket when other real pockets remain keeps the New slot',
     () async {
       final work = await creator.addFirstPocket(name: 'Work');
       await creator.addPocket(name: 'Body');
       await creator.removePocket(work.id);
 
       final rows = await repo.all();
-      expect(rows.map((r) => r.name).toList(), ['Body', 'Open']);
+      expect(rows.map((r) => r.name).toList(), ['Body', 'New']);
     },
   );
 }

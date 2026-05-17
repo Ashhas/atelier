@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 /// Empty goals area inside a pocket card.
 ///
 /// For a regular pocket: dashed border, "EMPTY" label.
-/// For the add-slot pocket (isAddSlot): dashed border, "OPEN · ADD" label.
+/// For the add-slot pocket (isAddSlot): dashed border, "NEW · ADD" label.
 ///
 /// Prototype: border 1px dashed rule, borderRadius 10, minHeight 50,
 /// center-aligned mono fontSize 9.5 mute letterSpacing 1.2 uppercase.
@@ -18,7 +18,7 @@ class PocketEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AtelierTheme.paletteOf(context);
-    final label = isAddSlot ? 'OPEN · ADD' : 'EMPTY';
+    final label = isAddSlot ? 'NEW · ADD' : 'EMPTY';
     return Container(
       constraints: const BoxConstraints(minHeight: 50),
       decoration: BoxDecoration(

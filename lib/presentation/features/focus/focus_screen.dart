@@ -21,8 +21,50 @@ import 'package:go_router/go_router.dart';
 /// Bottom: every category that has unstarred goals listed flat — left
 /// column shows the area name, right column lists the titles muted.
 /// Empty categories show "no goals added".
-class FocusScreen extends StatelessWidget {
+class FocusScreen extends StatefulWidget {
   const FocusScreen({super.key});
+
+  @override
+  State<FocusScreen> createState() => _FocusScreenState();
+}
+
+class _FocusScreenState extends State<FocusScreen>
+    with SingleTickerProviderStateMixin {
+  // Single controller drives the entire entry sequence. Intervals on
+  // child Animation<double>s carve out the per-element segments:
+  //   0–260ms     header slides+fades in
+  //   ~80ms each  starred cards stagger in (320ms each, ~55ms apart)
+  //   trailing    everything-else fades in last
+  // The 1000ms total upper-bounds the whole orchestration; intervals
+  // map design timings onto that 0..1 line.
+  static const _totalMs = 1000;
+  late final AnimationController _entry;
+
+  @override
+  void initState() {
+    super.initState();
+    _entry = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: _totalMs),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _entry.dispose();
+    super.dispose();
+  }
+
+  // Interval helper — converts (startMs, endMs) into a 0..1 Animation
+  // driven off the master controller with easeOutCubic applied.
+  Animation<double> _slice(int startMs, int endMs) => CurvedAnimation(
+    parent: _entry,
+    curve: Interval(
+      startMs / _totalMs,
+      endMs / _totalMs,
+      curve: Curves.easeOutCubic,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -41,17 +83,33 @@ class FocusScreen extends StatelessWidget {
             final starredCount = allGoals.where((g) => g.starred).length;
             final restCount = allGoals.length - starredCount;
 
+            // Count starred cards so the "everything else" delay knows
+            // how many staggered cards precede it.
+            final starredCardCount = realCategories
+                .where(
+                  (cat) => allGoals.any(
+                    (g) => g.goalCategoryId == cat.id && g.starred,
+                  ),
+                )
+                .length;
+            // 80ms initial + 55ms per card + 80ms after the last card.
+            final restStartMs = 80 + starredCardCount * 55 + 80;
+
             return Scaffold(
               backgroundColor: p.bg,
               body: SafeArea(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _Header(
-                      now: now,
-                      starredCount: starredCount,
-                      restCount: restCount,
-                      onClose: () => context.go('/'),
+                    _FadeSlide(
+                      animation: _slice(0, 260),
+                      offset: const Offset(0, -0.04),
+                      child: _Header(
+                        now: now,
+                        starredCount: starredCount,
+                        restCount: restCount,
+                        onClose: () => context.go('/'),
+                      ),
                     ),
                     Expanded(
                       child: SingleChildScrollView(
@@ -67,11 +125,20 @@ class FocusScreen extends StatelessWidget {
                             _StarredSection(
                               categories: realCategories,
                               goals: allGoals,
+                              // Per-card stagger: each card gets its own
+                              // interval starting at 80 + i*55ms.
+                              cardAnimationBuilder: (i) =>
+                                  _slice(80 + i * 55, 80 + i * 55 + 320),
+                              emptyAnimation: _slice(80, 80 + 320),
                             ),
                             const SizedBox(height: AtelierSpacing.x3l),
-                            _EverythingElseSection(
-                              categories: realCategories,
-                              goals: allGoals,
+                            _FadeSlide(
+                              animation: _slice(restStartMs, restStartMs + 350),
+                              offset: const Offset(0, 0.02),
+                              child: _EverythingElseSection(
+                                categories: realCategories,
+                                goals: allGoals,
+                              ),
                             ),
                           ],
                         ),
@@ -84,6 +151,36 @@ class FocusScreen extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// Fades + slides a child in along [offset] (fractional widget size,
+/// matching SlideTransition's semantics) as [animation] progresses 0→1.
+/// One reusable wrapper so every element in the focus orchestration
+/// reads the same.
+class _FadeSlide extends StatelessWidget {
+  const _FadeSlide({
+    required this.animation,
+    required this.offset,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final Offset offset;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: offset,
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
+      ),
     );
   }
 }
@@ -165,10 +262,17 @@ class _Header extends StatelessWidget {
 }
 
 class _StarredSection extends StatelessWidget {
-  const _StarredSection({required this.categories, required this.goals});
+  const _StarredSection({
+    required this.categories,
+    required this.goals,
+    required this.cardAnimationBuilder,
+    required this.emptyAnimation,
+  });
 
   final List<GoalCategory> categories;
   final List<Goal> goals;
+  final Animation<double> Function(int index) cardAnimationBuilder;
+  final Animation<double> emptyAnimation;
 
   @override
   Widget build(BuildContext context) {
@@ -184,22 +288,26 @@ class _StarredSection extends StatelessWidget {
     }
 
     if (starredByCategory.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AtelierSpacing.x2l,
-          vertical: AtelierSpacing.lg + AtelierSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(color: p.rule),
-          borderRadius: BorderRadius.circular(AtelierRadii.x2l),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          'NO STARRED GOALS YET',
-          style: AtelierTypography.monoMicro.copyWith(
-            color: p.mute,
-            letterSpacing: 1.4,
-            fontWeight: FontWeight.w600,
+      return _FadeSlide(
+        animation: emptyAnimation,
+        offset: const Offset(0, 0.02),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AtelierSpacing.x2l,
+            vertical: AtelierSpacing.lg + AtelierSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: p.rule),
+            borderRadius: BorderRadius.circular(AtelierRadii.x2l),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            'NO STARRED GOALS YET',
+            style: AtelierTypography.monoMicro.copyWith(
+              color: p.mute,
+              letterSpacing: 1.4,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       );
@@ -208,8 +316,12 @@ class _StarredSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final entry in starredByCategory) ...[
-          _StarredCard(category: entry.cat, items: entry.items),
+        for (final (i, entry) in starredByCategory.indexed) ...[
+          _FadeSlide(
+            animation: cardAnimationBuilder(i),
+            offset: const Offset(0, 0.04),
+            child: _StarredCard(category: entry.cat, items: entry.items),
+          ),
           const SizedBox(height: AtelierSpacing.base),
         ],
       ],

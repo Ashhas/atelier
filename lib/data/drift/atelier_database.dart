@@ -5,6 +5,7 @@ import 'package:atelier/data/drift/tables/goals_table.dart';
 import 'package:atelier/data/drift/tables/year_goals_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -33,7 +34,7 @@ class AtelierDatabase extends _$AtelierDatabase {
         // (starred desc, addedAt asc, id asc) so users don't see their
         // list shuffle on first launch after upgrade.
         await m.addColumn(goalsTable, goalsTable.sortOrder);
-        await _backfillGoalsSortOrder();
+        await backfillGoalsSortOrder();
       }
     },
     beforeOpen: (details) async {
@@ -41,10 +42,15 @@ class AtelierDatabase extends _$AtelierDatabase {
     },
   );
 
-  Future<void> _backfillGoalsSortOrder() async {
+  /// Rewrites `goals.sort_order` for every row, partitioned by category,
+  /// using the prior implicit-sort order (starred desc, addedAt asc, id asc).
+  /// Called once from the v1→v2 migration; exposed for direct testing of
+  /// the backfill logic against a freshly-seeded DB.
+  @visibleForTesting
+  Future<void> backfillGoalsSortOrder() async {
     // Fetch all rows, group by category, assign 0..N-1 in the existing
-    // implicit-sort order. Writing one UPDATE per row is fine here —
-    // this runs once per device on upgrade.
+    // implicit-sort order. The whole loop runs in one batch so a crash
+    // mid-migration leaves the DB at v1, not half-migrated.
     final all = await (select(goalsTable)..orderBy([
           (t) => OrderingTerm.asc(t.goalCategoryId),
           (t) => OrderingTerm.desc(t.starred),
@@ -53,17 +59,22 @@ class AtelierDatabase extends _$AtelierDatabase {
         ]))
         .get();
 
-    String? currentCategory;
-    var index = 0;
-    for (final row in all) {
-      if (row.goalCategoryId != currentCategory) {
-        currentCategory = row.goalCategoryId;
-        index = 0;
+    await batch((b) {
+      String? currentCategory;
+      var index = 0;
+      for (final row in all) {
+        if (row.goalCategoryId != currentCategory) {
+          currentCategory = row.goalCategoryId;
+          index = 0;
+        }
+        b.update(
+          goalsTable,
+          GoalsTableCompanion(sortOrder: Value(index)),
+          where: (t) => t.id.equals(row.id),
+        );
+        index += 1;
       }
-      await (update(goalsTable)..where((t) => t.id.equals(row.id)))
-          .write(GoalsTableCompanion(sortOrder: Value(index)));
-      index += 1;
-    }
+    });
   }
 }
 

@@ -112,10 +112,9 @@ class _DetailScreenState extends State<DetailScreen> {
                       ]),
                     ),
                   ),
-                  // Goals as a long-press reorderable sliver. Drag start
-                  // is delayed (~500ms) so taps and short presses still
-                  // route through the row's own gesture handlers
-                  // (expand, star, edit).
+                  // Drag start is delayed (~500ms) so the row's own tap
+                  // handlers (expand, star, edit) still fire on short
+                  // presses — only long-presses initiate a reorder.
                   if (goals.isNotEmpty)
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
@@ -125,9 +124,6 @@ class _DetailScreenState extends State<DetailScreen> {
                         itemCount: goals.length,
                         itemBuilder: (context, index) {
                           final g = goals[index];
-                          // Wrap in DelayedDragStart so the long-press
-                          // gesture initiates the reorder; ordinary taps
-                          // still reach the GoalRow underneath.
                           return ReorderableDelayedDragStartListener(
                             key: ValueKey(g.id),
                             index: index,

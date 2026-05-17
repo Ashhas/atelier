@@ -75,6 +75,33 @@ void main() {
     ]);
   });
 
+  test('reorder throws if the id list is missing a row', () async {
+    await repo.add(g('1', 'cat-a'));
+    await repo.add(g('2', 'cat-a'));
+    await repo.add(g('3', 'cat-a'));
+
+    expect(
+      () => repo.reorder(
+        goalCategoryId: 'cat-a',
+        orderedIds: const ['1', '2'],
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('reorder throws if the id list contains a stranger', () async {
+    await repo.add(g('1', 'cat-a'));
+    await repo.add(g('2', 'cat-a'));
+    // 'x' isn't in cat-a.
+    expect(
+      () => repo.reorder(
+        goalCategoryId: 'cat-a',
+        orderedIds: const ['1', '2', 'x'],
+      ),
+      throwsStateError,
+    );
+  });
+
   test('toggleStar (via update) preserves position in the list', () async {
     await repo.add(g('1', 'cat-a'));
     await repo.add(g('2', 'cat-a'));

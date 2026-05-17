@@ -30,22 +30,35 @@ class DriftGoalRepository implements GoalRepository {
 
   @override
   Future<Goal> add(Goal goal) async {
-    // Assign the next sortOrder for this category at insert time so the
-    // new goal lands at the bottom of the list. If the caller already set
-    // sortOrder explicitly, respect that.
-    final effectiveOrder = goal.sortOrder != 0
-        ? goal.sortOrder
-        : await _nextSortOrder(goal.goalCategoryId);
-    final toInsert = goal.copyWith(sortOrder: effectiveOrder);
-    await _db.into(_db.goalsTable).insert(_toCompanion(toInsert));
-    return toInsert;
+    final nextOrder = await _nextSortOrder(goal.goalCategoryId);
+    await _db.into(_db.goalsTable).insert(
+          GoalsTableCompanion.insert(
+            id: goal.id,
+            goalCategoryId: goal.goalCategoryId,
+            title: goal.title,
+            addedAt: goal.addedAt,
+            starred: Value(goal.starred),
+            sortOrder: Value(nextOrder),
+          ),
+        );
+    return goal;
   }
 
   @override
   Future<void> update(Goal goal) async {
-    await (_db.update(
-      _db.goalsTable,
-    )..where((t) => t.id.equals(goal.id))).write(_toCompanion(goal));
+    // Only write the mutable domain fields. sort_order is owned by the
+    // data layer and untouched by renames or star toggles — repositioning
+    // goes through reorder().
+    await (_db.update(_db.goalsTable)
+          ..where((t) => t.id.equals(goal.id)))
+        .write(
+      GoalsTableCompanion(
+        goalCategoryId: Value(goal.goalCategoryId),
+        title: Value(goal.title),
+        starred: Value(goal.starred),
+        addedAt: Value(goal.addedAt),
+      ),
+    );
   }
 
   @override
@@ -63,14 +76,28 @@ class DriftGoalRepository implements GoalRepository {
     required String goalCategoryId,
     required List<String> orderedIds,
   }) async {
+    // Verify the caller's id list exactly matches the rows we have for
+    // this category. Mismatches indicate a stale snapshot — fail loudly
+    // so the issue surfaces at the boundary instead of leaving the table
+    // in a partially-renumbered state.
+    final existingIds = (await byCategory(goalCategoryId))
+        .map((g) => g.id)
+        .toSet();
+    final requested = orderedIds.toSet();
+    if (existingIds.length != requested.length ||
+        !existingIds.containsAll(requested)) {
+      throw StateError(
+        'reorder() id mismatch for category $goalCategoryId: '
+        'expected ${existingIds.length} rows, got ${requested.length}',
+      );
+    }
+
     await _db.batch((b) {
       for (var i = 0; i < orderedIds.length; i++) {
         b.update(
           _db.goalsTable,
           GoalsTableCompanion(sortOrder: Value(i)),
-          where: (t) =>
-              t.id.equals(orderedIds[i]) &
-              t.goalCategoryId.equals(goalCategoryId),
+          where: (t) => t.id.equals(orderedIds[i]),
         );
       }
     });
@@ -88,20 +115,10 @@ class DriftGoalRepository implements GoalRepository {
   }
 
   Goal _fromRow(GoalRow r) => Goal(
-    id: r.id,
-    goalCategoryId: r.goalCategoryId,
-    title: r.title,
-    starred: r.starred,
-    addedAt: r.addedAt,
-    sortOrder: r.sortOrder,
-  );
-
-  GoalsTableCompanion _toCompanion(Goal g) => GoalsTableCompanion(
-    id: Value(g.id),
-    goalCategoryId: Value(g.goalCategoryId),
-    title: Value(g.title),
-    starred: Value(g.starred),
-    addedAt: Value(g.addedAt),
-    sortOrder: Value(g.sortOrder),
-  );
+        id: r.id,
+        goalCategoryId: r.goalCategoryId,
+        title: r.title,
+        starred: r.starred,
+        addedAt: r.addedAt,
+      );
 }

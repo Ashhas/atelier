@@ -1,3 +1,4 @@
+import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
 import 'package:atelier/presentation/features/detail/state/goals_state.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_cubit.dart';
@@ -10,11 +11,13 @@ import 'package:atelier/presentation/features/home/state/manage_mode_state.dart'
 import 'package:atelier/presentation/features/home/widgets/empty_state/home_empty_state.dart';
 import 'package:atelier/presentation/features/home/widgets/grid/pocket_grid.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/home_top_bar.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/theme/atelier_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockGoalCategoriesCubit extends Mock implements GoalCategoriesCubit {}
 
@@ -29,6 +32,7 @@ Widget _wrap({
   required ManageModeCubit manage,
   required GoalsCubit goals,
   required YearGoalsCubit yearGoals,
+  required SettingsCubit settings,
 }) => MaterialApp(
   theme: AtelierTheme.light(),
   home: MultiBlocProvider(
@@ -37,6 +41,7 @@ Widget _wrap({
       BlocProvider<ManageModeCubit>.value(value: manage),
       BlocProvider<GoalsCubit>.value(value: goals),
       BlocProvider<YearGoalsCubit>.value(value: yearGoals),
+      BlocProvider<SettingsCubit>.value(value: settings),
     ],
     child: const HomeScreen(),
   ),
@@ -47,8 +52,14 @@ void main() {
   late _MockManageModeCubit manageCubit;
   late _MockGoalsCubit goalsCubit;
   late _MockYearGoalsCubit yearGoalsCubit;
+  late SettingsCubit settingsCubit;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    settingsCubit = SettingsCubit(PrefsSettingsRepository(prefs));
+    await settingsCubit.load();
+
     categoriesCubit = _MockGoalCategoriesCubit();
     manageCubit = _MockManageModeCubit();
     goalsCubit = _MockGoalsCubit();
@@ -80,6 +91,7 @@ void main() {
         manage: manageCubit,
         goals: goalsCubit,
         yearGoals: yearGoalsCubit,
+        settings: settingsCubit,
       ),
     );
     expect(find.byType(HomeEmptyState), findsOneWidget);
@@ -111,6 +123,7 @@ void main() {
         manage: manageCubit,
         goals: goalsCubit,
         yearGoals: yearGoalsCubit,
+        settings: settingsCubit,
       ),
     );
     // When not loaded, isEmpty == false, so grid shows
@@ -134,6 +147,7 @@ void main() {
         manage: manageCubit,
         goals: goalsCubit,
         yearGoals: yearGoalsCubit,
+        settings: settingsCubit,
       ),
     );
     // Tap on the background area

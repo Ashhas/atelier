@@ -1,13 +1,17 @@
 import 'package:atelier/domain/models/year_goal.dart';
 import 'package:atelier/domain/repositories/year_goal_repository.dart';
 import 'package:atelier/presentation/features/detail/state/year_goals_state.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/utils/uuid.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class YearGoalsCubit extends Cubit<YearGoalsState> {
-  YearGoalsCubit(this._repo) : super(const YearGoalsState());
+  YearGoalsCubit(this._repo, {SettingsCubit? settingsCubit})
+    : _settingsCubit = settingsCubit,
+      super(const YearGoalsState());
 
   final YearGoalRepository _repo;
+  final SettingsCubit? _settingsCubit;
 
   Future<void> load() async {
     final all = await _repo.all();
@@ -24,6 +28,8 @@ class YearGoalsCubit extends Cubit<YearGoalsState> {
       YearGoal(id: newId(), goalCategoryId: goalCategoryId, title: trimmed),
     );
     await load();
+    // First-run latch — see GoalsCubit.add for the why.
+    await _settingsCubit?.markGoalEver();
   }
 
   Future<void> rename({required String id, required String title}) async {

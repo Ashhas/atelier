@@ -13,6 +13,7 @@ class PrefsSettingsRepository implements SettingsRepository {
   static const _kFontScale = 'atelier.fontScale';
   static const _kPocketYearLines = 'atelier.pocketYearLines';
   static const _kPocketGoalsPreviewCount = 'atelier.pocketGoalsPreviewCount';
+  static const _kHasGoalEver = 'atelier.hasGoalEver';
 
   // String tokens for the unbounded values; integers otherwise.
   static const _kUnboundedLines = 'full';
@@ -33,6 +34,7 @@ class PrefsSettingsRepository implements SettingsRepository {
         unboundedToken: _kUnboundedCount,
         defaultValue: 3,
       ),
+      hasGoalEver: _prefs.getBool(_kHasGoalEver) ?? false,
     );
   }
 
@@ -51,6 +53,7 @@ class PrefsSettingsRepository implements SettingsRepository {
         _kUnboundedCount,
       ),
     );
+    await _prefs.setBool(_kHasGoalEver, settings.hasGoalEver);
   }
 
   @override
@@ -59,6 +62,7 @@ class PrefsSettingsRepository implements SettingsRepository {
     await _prefs.remove(_kFontScale);
     await _prefs.remove(_kPocketYearLines);
     await _prefs.remove(_kPocketGoalsPreviewCount);
+    await _prefs.remove(_kHasGoalEver);
   }
 
   ThemeMode _parseTheme(String? raw) {

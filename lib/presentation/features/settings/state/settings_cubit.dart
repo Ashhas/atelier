@@ -40,6 +40,15 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(settings: updated));
   }
 
+  /// Latches `hasGoalEver` to true. Idempotent — safe to call from
+  /// every add path. No-op when already true.
+  Future<void> markGoalEver() async {
+    if (state.settings.hasGoalEver) return;
+    final updated = state.settings.copyWith(hasGoalEver: true);
+    await _repo.write(updated);
+    emit(state.copyWith(settings: updated));
+  }
+
   Future<void> reset() async {
     await _repo.clear();
     await load();

@@ -11,6 +11,14 @@ void main() {
       expect(s.fontScale, FontScale.medium);
       expect(s.pocketYearLines, 1);
       expect(s.pocketGoalsPreviewCount, 3);
+      expect(s.hasGoalEver, isFalse);
+    });
+
+    test('copyWith hasGoalEver flips the latch', () {
+      const s = AppSettings();
+      final t = s.copyWith(hasGoalEver: true);
+      expect(t.hasGoalEver, isTrue);
+      expect(t.themeMode, s.themeMode);
     });
 
     test('copyWith replaces only the fields provided', () {

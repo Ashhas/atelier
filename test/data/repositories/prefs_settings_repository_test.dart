@@ -44,9 +44,20 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final repo = PrefsSettingsRepository(prefs);
     await repo.write(
-      const AppSettings(themeMode: ThemeMode.dark, pocketYearLines: 3),
+      const AppSettings(
+        themeMode: ThemeMode.dark,
+        pocketYearLines: 3,
+        hasGoalEver: true,
+      ),
     );
     await repo.clear();
     expect(await repo.read(), const AppSettings());
+  });
+
+  test('hasGoalEver round-trips', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = PrefsSettingsRepository(prefs);
+    await repo.write(const AppSettings(hasGoalEver: true));
+    expect((await repo.read()).hasGoalEver, isTrue);
   });
 }

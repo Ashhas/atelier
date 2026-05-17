@@ -1,13 +1,17 @@
 import 'package:atelier/domain/models/goal.dart';
 import 'package:atelier/domain/repositories/goal_repository.dart';
 import 'package:atelier/presentation/features/detail/state/goals_state.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:atelier/utils/uuid.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class GoalsCubit extends Cubit<GoalsState> {
-  GoalsCubit(this._repo) : super(const GoalsState());
+  GoalsCubit(this._repo, {SettingsCubit? settingsCubit})
+    : _settingsCubit = settingsCubit,
+      super(const GoalsState());
 
   final GoalRepository _repo;
+  final SettingsCubit? _settingsCubit;
 
   Future<void> load() async {
     final all = await _repo.all();
@@ -29,6 +33,9 @@ class GoalsCubit extends Cubit<GoalsState> {
       ),
     );
     await load();
+    // Latch the first-run flag — drives the empty-state theme toggle's
+    // one-time visibility. Idempotent and a no-op when already set.
+    await _settingsCubit?.markGoalEver();
   }
 
   Future<void> rename({required String id, required String title}) async {

@@ -56,6 +56,10 @@ class _AtelierAppState extends State<AtelierApp> {
   late final ExportService _exporter;
   late final GoRouter _router;
 
+  // SettingsCubit is constructed eagerly so the goal cubits can hold a
+  // reference and call markGoalEver() on the first add.
+  late final SettingsCubit _settingsCubit;
+
   /// Resolves the effective brightness for the system UI overlay, accounting
   /// for ThemeMode.system using the platform's reported brightness.
   bool _resolveIsDark(BuildContext context, ThemeMode mode) {
@@ -89,7 +93,14 @@ class _AtelierAppState extends State<AtelierApp> {
       yearGoals: _yearGoalsRepo,
       settingsRepository: _settingsRepo,
     );
+    _settingsCubit = SettingsCubit(_settingsRepo)..load();
     _router = AtelierRouter.build();
+  }
+
+  @override
+  void dispose() {
+    _settingsCubit.close();
+    super.dispose();
   }
 
   @override
@@ -105,9 +116,16 @@ class _AtelierAppState extends State<AtelierApp> {
             create: (_) =>
                 GoalCategoriesCubit(_categoriesRepo, _openSlot)..load(),
           ),
-          BlocProvider(create: (_) => GoalsCubit(_goalsRepo)..load()),
-          BlocProvider(create: (_) => YearGoalsCubit(_yearGoalsRepo)..load()),
-          BlocProvider(create: (_) => SettingsCubit(_settingsRepo)..load()),
+          BlocProvider(
+            create: (_) =>
+                GoalsCubit(_goalsRepo, settingsCubit: _settingsCubit)..load(),
+          ),
+          BlocProvider(
+            create: (_) =>
+                YearGoalsCubit(_yearGoalsRepo, settingsCubit: _settingsCubit)
+                  ..load(),
+          ),
+          BlocProvider.value(value: _settingsCubit),
           BlocProvider(create: (_) => ManageModeCubit()),
         ],
         child: BlocBuilder<SettingsCubit, SettingsState>(

@@ -75,4 +75,27 @@ void main() {
     await cubit.setPocketGoalsPreviewCount(null);
     expect(cubit.state.settings.pocketGoalsPreviewCount, isNull);
   });
+
+  test('markGoalEver latches true and is idempotent', () async {
+    final cubit = SettingsCubit(repo);
+    await cubit.load();
+    expect(cubit.state.settings.hasGoalEver, isFalse);
+
+    await cubit.markGoalEver();
+    expect(cubit.state.settings.hasGoalEver, isTrue);
+
+    // Second call is a no-op (already true). Test passes by not throwing.
+    await cubit.markGoalEver();
+    expect(cubit.state.settings.hasGoalEver, isTrue);
+  });
+
+  test('reset clears hasGoalEver back to false', () async {
+    final cubit = SettingsCubit(repo);
+    await cubit.load();
+    await cubit.markGoalEver();
+    expect(cubit.state.settings.hasGoalEver, isTrue);
+
+    await cubit.reset();
+    expect(cubit.state.settings.hasGoalEver, isFalse);
+  });
 }

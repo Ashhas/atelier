@@ -1,11 +1,14 @@
 import 'package:atelier/data/drift/atelier_database.dart';
 import 'package:atelier/data/repositories/drift_goal_category_repository.dart';
 import 'package:atelier/data/repositories/drift_goal_repository.dart';
+import 'package:atelier/data/repositories/prefs_settings_repository.dart';
 import 'package:atelier/domain/models/goal_category.dart';
 import 'package:atelier/presentation/features/detail/state/goals_cubit.dart';
 import 'package:atelier/presentation/features/detail/state/goals_state.dart';
+import 'package:atelier/presentation/features/settings/state/settings_cubit.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late AtelierDatabase db;
@@ -71,6 +74,20 @@ void main() {
       cubit.state.forCategory('cat-a').map((g) => g.title).toList(),
       ['C', 'A', 'B'],
     );
+  });
+
+  test('add() with a SettingsCubit latches hasGoalEver on first add', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final settings = SettingsCubit(PrefsSettingsRepository(prefs));
+    await settings.load();
+    expect(settings.state.settings.hasGoalEver, isFalse);
+
+    final cubit = GoalsCubit(repo, settingsCubit: settings);
+    await cubit.load();
+    await cubit.add(goalCategoryId: 'cat-a', title: 'A');
+
+    expect(settings.state.settings.hasGoalEver, isTrue);
   });
 
   test('rename + delete work', () async {

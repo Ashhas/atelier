@@ -236,6 +236,12 @@ class _DensityPreview extends StatelessWidget {
     ),
   ];
 
+  // Tall enough to comfortably show a Standard (2 lines, 5 goals) preview
+  // at natural size. Anything larger (Expanded / lots of lines) will be
+  // scaled down by the FittedBox below so the surrounding settings list
+  // doesn't jump around as the user dials density up.
+  static const double _frameHeight = 280;
+
   @override
   Widget build(BuildContext context) {
     final p = AtelierTheme.paletteOf(context);
@@ -246,15 +252,27 @@ class _DensityPreview extends StatelessWidget {
         border: Border.all(color: p.rule),
         borderRadius: BorderRadius.circular(AtelierRadii.lg),
       ),
-      child: Center(
-        child: SizedBox(
-          width: 200,
-          child: _PreviewPocket(
-            lines: lines,
-            count: count,
-            yearGoals: _yearGoals,
-            goals: _goals,
-            category: _category,
+      child: SizedBox(
+        height: _frameHeight,
+        child: Center(
+          // scaleDown: shrinks the pocket only when it exceeds the frame;
+          // smaller previews render at natural size (no upscaling). This
+          // keeps the preview block's outer height fixed regardless of
+          // density picks, which avoids the surrounding list shifting
+          // when the user changes settings.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 200,
+              child: _PreviewPocket(
+                lines: lines,
+                count: count,
+                yearGoals: _yearGoals,
+                goals: _goals,
+                category: _category,
+              ),
+            ),
           ),
         ),
       ),

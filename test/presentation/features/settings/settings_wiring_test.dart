@@ -134,12 +134,24 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SettingsSheet), findsOneWidget);
 
-      // Tap "Reset all data" to show confirm.
+      // Scroll the sheet's content to bring "Reset all data" into view —
+      // the sheet's preview block makes the list tall enough that the
+      // reset row sits below the visible area on first open.
+      await tester.scrollUntilVisible(
+        find.text('Reset all data'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.text('Reset all data'));
       await tester.pumpAndSettle();
       expect(find.text('RESET'), findsOneWidget);
 
-      // Confirm reset.
+      // Confirm reset — same scroll-to dance for the confirm pill.
+      await tester.scrollUntilVisible(
+        find.text('RESET'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.text('RESET'));
       await tester.pumpAndSettle();
 

@@ -1,5 +1,6 @@
 import 'package:atelier/presentation/features/home/widgets/top_bar/days_left_label.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/done_pill_button.dart';
+import 'package:atelier/presentation/features/home/widgets/top_bar/focus_button.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/settings_gear_button.dart';
 import 'package:atelier/presentation/features/home/widgets/tick_strip/tick_strip.dart';
 import 'package:atelier/theme/atelier_spacing.dart';
@@ -22,12 +23,14 @@ class HomeTopBar extends StatelessWidget {
     required this.isManaging,
     required this.onSettings,
     required this.onDone,
+    required this.onFocus,
   });
 
   final DateTime now;
   final bool isManaging;
   final VoidCallback onSettings;
   final VoidCallback onDone;
+  final VoidCallback onFocus;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +73,9 @@ class HomeTopBar extends StatelessWidget {
                 DonePillButton(onTap: onDone)
               else ...[
                 DaysLeftLabel(now: now),
-                const SizedBox(width: AtelierSpacing.xl), // gap: ~12
+                const SizedBox(width: AtelierSpacing.base), // gap: 8
+                FocusButton(onTap: onFocus),
+                const SizedBox(width: AtelierSpacing.base), // gap: 8
                 SettingsGearButton(onTap: onSettings),
               ],
             ],

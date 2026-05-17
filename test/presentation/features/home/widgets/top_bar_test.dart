@@ -1,5 +1,6 @@
 import 'package:atelier/presentation/features/home/widgets/top_bar/days_left_label.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/done_pill_button.dart';
+import 'package:atelier/presentation/features/home/widgets/top_bar/focus_button.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/home_top_bar.dart';
 import 'package:atelier/presentation/features/home/widgets/top_bar/settings_gear_button.dart';
 import 'package:atelier/theme/atelier_theme.dart';
@@ -21,6 +22,7 @@ void main() {
             isManaging: false,
             onSettings: () {},
             onDone: () {},
+            onFocus: () {},
           ),
         ),
       );
@@ -38,12 +40,31 @@ void main() {
             isManaging: false,
             onSettings: () {},
             onDone: () {},
+            onFocus: () {},
           ),
         ),
       );
       expect(find.byType(DaysLeftLabel), findsOneWidget);
+      expect(find.byType(FocusButton), findsOneWidget);
       expect(find.byType(SettingsGearButton), findsOneWidget);
       expect(find.byType(DonePillButton), findsNothing);
+    });
+
+    testWidgets('tapping FocusButton fires onFocus callback', (tester) async {
+      bool fired = false;
+      await tester.pumpWidget(
+        _wrap(
+          HomeTopBar(
+            now: DateTime(2026, 5, 2),
+            isManaging: false,
+            onSettings: () {},
+            onDone: () {},
+            onFocus: () => fired = true,
+          ),
+        ),
+      );
+      await tester.tap(find.byType(FocusButton));
+      expect(fired, isTrue);
     });
 
     testWidgets('shows Done pill instead of gear in manage mode §3.6', (
@@ -56,6 +77,7 @@ void main() {
             isManaging: true,
             onSettings: () {},
             onDone: () {},
+            onFocus: () {},
           ),
         ),
       );
@@ -74,6 +96,7 @@ void main() {
             isManaging: false,
             onSettings: () => fired = true,
             onDone: () {},
+            onFocus: () {},
           ),
         ),
       );
@@ -90,6 +113,7 @@ void main() {
             isManaging: true,
             onSettings: () {},
             onDone: () => fired = true,
+            onFocus: () {},
           ),
         ),
       );

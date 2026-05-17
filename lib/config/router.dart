@@ -1,4 +1,5 @@
 import 'package:atelier/presentation/features/detail/detail_container.dart';
+import 'package:atelier/presentation/features/focus/focus_container.dart';
 import 'package:atelier/presentation/features/home/home_container.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +9,7 @@ class AtelierRouter {
   static GoRouter build() => GoRouter(
     routes: [
       GoRoute(path: '/', builder: (_, __) => const HomeContainer()),
+      GoRoute(path: '/focus', builder: (_, __) => const FocusContainer()),
       GoRoute(
         path: '/pocket/:id',
         builder: (_, state) {

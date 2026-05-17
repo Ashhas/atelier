@@ -12,6 +12,7 @@ import 'package:atelier/presentation/features/settings/state/settings_cubit.dart
 import 'package:atelier/services/data_resetter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 /// Main home screen: top bar + tick strip + pocket grid, OR empty state.
 ///
@@ -39,6 +40,7 @@ class HomeScreen extends StatelessWidget {
                   isManaging: isManaging,
                   onSettings: () => _openSettings(context),
                   onDone: manageCubit.exit,
+                  onFocus: () => context.go('/focus'),
                 ),
                 Expanded(
                   child: isEmpty

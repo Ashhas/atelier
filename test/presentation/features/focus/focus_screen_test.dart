@@ -25,12 +25,7 @@ const _addSlot = GoalCategory(
   isAddSlot: true,
 );
 
-Goal _g(
-  String id,
-  String catId,
-  String title, {
-  bool starred = false,
-}) => Goal(
+Goal _g(String id, String catId, String title, {bool starred = false}) => Goal(
   id: id,
   goalCategoryId: catId,
   title: title,
@@ -123,9 +118,9 @@ void main() {
       when(() => cats.state).thenReturn(
         const GoalCategoriesState(loaded: true, categories: [_body, _addSlot]),
       );
-      when(() => goals.state).thenReturn(
-        const GoalsState(loaded: true, goals: []),
-      );
+      when(
+        () => goals.state,
+      ).thenReturn(const GoalsState(loaded: true, goals: []));
 
       await tester.pumpWidget(_wrap(goalsCubit: goals, catsCubit: cats));
       await tester.pumpAndSettle();
@@ -136,25 +131,29 @@ void main() {
       expect(find.text('NEW'), findsNothing);
     });
 
-    testWidgets('"everything else" row labels show "no goals added" when empty', (
-      tester,
-    ) async {
-      when(() => cats.state).thenReturn(
-        const GoalCategoriesState(loaded: true, categories: [_body, _addSlot]),
-      );
-      when(() => goals.state).thenReturn(
-        GoalsState(
-          loaded: true,
-          goals: [_g('1', 'body', 'Sub-25 5K', starred: true)],
-        ),
-      );
+    testWidgets(
+      '"everything else" row labels show "no goals added" when empty',
+      (tester) async {
+        when(() => cats.state).thenReturn(
+          const GoalCategoriesState(
+            loaded: true,
+            categories: [_body, _addSlot],
+          ),
+        );
+        when(() => goals.state).thenReturn(
+          GoalsState(
+            loaded: true,
+            goals: [_g('1', 'body', 'Sub-25 5K', starred: true)],
+          ),
+        );
 
-      await tester.pumpWidget(_wrap(goalsCubit: goals, catsCubit: cats));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_wrap(goalsCubit: goals, catsCubit: cats));
+        await tester.pumpAndSettle();
 
-      // Body has 1 starred + 0 unstarred → the everything-else row for Body
-      // shows the italic empty hint.
-      expect(find.text('no goals added'), findsOneWidget);
-    });
+        // Body has 1 starred + 0 unstarred → the everything-else row for Body
+        // shows the italic empty hint.
+        expect(find.text('no goals added'), findsOneWidget);
+      },
+    );
   });
 }

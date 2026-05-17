@@ -51,13 +51,14 @@ class AtelierDatabase extends _$AtelierDatabase {
     // Fetch all rows, group by category, assign 0..N-1 in the existing
     // implicit-sort order. The whole loop runs in one batch so a crash
     // mid-migration leaves the DB at v1, not half-migrated.
-    final all = await (select(goalsTable)..orderBy([
-          (t) => OrderingTerm.asc(t.goalCategoryId),
-          (t) => OrderingTerm.desc(t.starred),
-          (t) => OrderingTerm.asc(t.addedAt),
-          (t) => OrderingTerm.asc(t.id),
-        ]))
-        .get();
+    final all =
+        await (select(goalsTable)..orderBy([
+              (t) => OrderingTerm.asc(t.goalCategoryId),
+              (t) => OrderingTerm.desc(t.starred),
+              (t) => OrderingTerm.asc(t.addedAt),
+              (t) => OrderingTerm.asc(t.id),
+            ]))
+            .get();
 
     await batch((b) {
       String? currentCategory;

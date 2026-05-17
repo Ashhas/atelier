@@ -63,10 +63,7 @@ class GoalsCubit extends Cubit<GoalsState> {
     required String goalCategoryId,
     required List<String> orderedIds,
   }) async {
-    await _repo.reorder(
-      goalCategoryId: goalCategoryId,
-      orderedIds: orderedIds,
-    );
+    await _repo.reorder(goalCategoryId: goalCategoryId, orderedIds: orderedIds);
     await load();
   }
 

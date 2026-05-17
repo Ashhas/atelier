@@ -395,10 +395,7 @@ class _StarredCard extends StatelessWidget {
 }
 
 class _EverythingElseSection extends StatelessWidget {
-  const _EverythingElseSection({
-    required this.categories,
-    required this.goals,
-  });
+  const _EverythingElseSection({required this.categories, required this.goals});
 
   final List<GoalCategory> categories;
   final List<Goal> goals;

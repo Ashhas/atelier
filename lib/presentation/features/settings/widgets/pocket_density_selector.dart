@@ -175,11 +175,7 @@ class _DensityPreview extends StatelessWidget {
   final int? lines;
   final int? count;
 
-  static const _category = GoalCategory(
-    id: '_preview',
-    name: 'Body',
-    order: 0,
-  );
+  static const _category = GoalCategory(id: '_preview', name: 'Body', order: 0);
 
   static final _now = DateTime(2026, 5, 12);
 

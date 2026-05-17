@@ -31,7 +31,9 @@ class DriftGoalRepository implements GoalRepository {
   @override
   Future<Goal> add(Goal goal) async {
     final nextOrder = await _nextSortOrder(goal.goalCategoryId);
-    await _db.into(_db.goalsTable).insert(
+    await _db
+        .into(_db.goalsTable)
+        .insert(
           GoalsTableCompanion.insert(
             id: goal.id,
             goalCategoryId: goal.goalCategoryId,
@@ -49,9 +51,9 @@ class DriftGoalRepository implements GoalRepository {
     // Only write the mutable domain fields. sort_order is owned by the
     // data layer and untouched by renames or star toggles — repositioning
     // goes through reorder().
-    await (_db.update(_db.goalsTable)
-          ..where((t) => t.id.equals(goal.id)))
-        .write(
+    await (_db.update(
+      _db.goalsTable,
+    )..where((t) => t.id.equals(goal.id))).write(
       GoalsTableCompanion(
         goalCategoryId: Value(goal.goalCategoryId),
         title: Value(goal.title),
@@ -80,9 +82,9 @@ class DriftGoalRepository implements GoalRepository {
     // this category. Mismatches indicate a stale snapshot — fail loudly
     // so the issue surfaces at the boundary instead of leaving the table
     // in a partially-renumbered state.
-    final existingIds = (await byCategory(goalCategoryId))
-        .map((g) => g.id)
-        .toSet();
+    final existingIds = (await byCategory(
+      goalCategoryId,
+    )).map((g) => g.id).toSet();
     final requested = orderedIds.toSet();
     if (existingIds.length != requested.length ||
         !existingIds.containsAll(requested)) {
@@ -115,10 +117,10 @@ class DriftGoalRepository implements GoalRepository {
   }
 
   Goal _fromRow(GoalRow r) => Goal(
-        id: r.id,
-        goalCategoryId: r.goalCategoryId,
-        title: r.title,
-        starred: r.starred,
-        addedAt: r.addedAt,
-      );
+    id: r.id,
+    goalCategoryId: r.goalCategoryId,
+    title: r.title,
+    starred: r.starred,
+    addedAt: r.addedAt,
+  );
 }

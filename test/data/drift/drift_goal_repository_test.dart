@@ -81,10 +81,7 @@ void main() {
     await repo.add(g('3', 'cat-a'));
 
     expect(
-      () => repo.reorder(
-        goalCategoryId: 'cat-a',
-        orderedIds: const ['1', '2'],
-      ),
+      () => repo.reorder(goalCategoryId: 'cat-a', orderedIds: const ['1', '2']),
       throwsStateError,
     );
   });

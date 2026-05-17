@@ -138,11 +138,9 @@ class _DetailScreenState extends State<DetailScreen> {
                                     _toggleExpandedGoal(g.id),
                                 onToggleStar: () =>
                                     context.read<GoalsCubit>().toggleStar(g.id),
-                                onRename: (title) =>
-                                    context.read<GoalsCubit>().rename(
-                                      id: g.id,
-                                      title: title,
-                                    ),
+                                onRename: (title) => context
+                                    .read<GoalsCubit>()
+                                    .rename(id: g.id, title: title),
                                 onDelete: () =>
                                     context.read<GoalsCubit>().delete(g.id),
                               ),

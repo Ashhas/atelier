@@ -88,9 +88,7 @@ class _YearBannerExpandedState extends State<YearBannerExpanded> {
               children: [
                 Expanded(
                   child: Text(
-                    _isEditing
-                        ? '$year · EDITING'
-                        : '$year · NORTH STAR',
+                    _isEditing ? '$year · EDITING' : '$year · NORTH STAR',
                     style: AtelierTypography.monoEyebrow.copyWith(color: p.sub),
                   ),
                 ),

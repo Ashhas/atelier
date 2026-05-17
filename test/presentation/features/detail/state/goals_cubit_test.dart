@@ -36,28 +36,34 @@ void main() {
     ]);
   });
 
-  test('toggleStar flips the flag without moving the goal in the list', () async {
-    final cubit = GoalsCubit(repo);
-    await cubit.load();
-    await cubit.add(goalCategoryId: 'cat-a', title: 'A');
-    await cubit.add(goalCategoryId: 'cat-a', title: 'B');
-    await cubit.add(goalCategoryId: 'cat-a', title: 'C');
-    final b = cubit.state
-        .forCategory('cat-a')
-        .firstWhere((g) => g.title == 'B');
-    await cubit.toggleStar(b.id);
-    // B stays in the middle — starring no longer auto-promotes because
-    // manual reorder owns the order now.
-    final titles = cubit.state
-        .forCategory('cat-a')
-        .map((g) => g.title)
-        .toList();
-    expect(titles, ['A', 'B', 'C']);
-    expect(
-      cubit.state.forCategory('cat-a').firstWhere((g) => g.title == 'B').starred,
-      isTrue,
-    );
-  });
+  test(
+    'toggleStar flips the flag without moving the goal in the list',
+    () async {
+      final cubit = GoalsCubit(repo);
+      await cubit.load();
+      await cubit.add(goalCategoryId: 'cat-a', title: 'A');
+      await cubit.add(goalCategoryId: 'cat-a', title: 'B');
+      await cubit.add(goalCategoryId: 'cat-a', title: 'C');
+      final b = cubit.state
+          .forCategory('cat-a')
+          .firstWhere((g) => g.title == 'B');
+      await cubit.toggleStar(b.id);
+      // B stays in the middle — starring no longer auto-promotes because
+      // manual reorder owns the order now.
+      final titles = cubit.state
+          .forCategory('cat-a')
+          .map((g) => g.title)
+          .toList();
+      expect(titles, ['A', 'B', 'C']);
+      expect(
+        cubit.state
+            .forCategory('cat-a')
+            .firstWhere((g) => g.title == 'B')
+            .starred,
+        isTrue,
+      );
+    },
+  );
 
   test('reorder persists the new order', () async {
     final cubit = GoalsCubit(repo);
@@ -65,15 +71,18 @@ void main() {
     await cubit.add(goalCategoryId: 'cat-a', title: 'A');
     await cubit.add(goalCategoryId: 'cat-a', title: 'B');
     await cubit.add(goalCategoryId: 'cat-a', title: 'C');
-    final byTitle = {for (final g in cubit.state.forCategory('cat-a')) g.title: g.id};
+    final byTitle = {
+      for (final g in cubit.state.forCategory('cat-a')) g.title: g.id,
+    };
     await cubit.reorder(
       goalCategoryId: 'cat-a',
       orderedIds: [byTitle['C']!, byTitle['A']!, byTitle['B']!],
     );
-    expect(
-      cubit.state.forCategory('cat-a').map((g) => g.title).toList(),
-      ['C', 'A', 'B'],
-    );
+    expect(cubit.state.forCategory('cat-a').map((g) => g.title).toList(), [
+      'C',
+      'A',
+      'B',
+    ]);
   });
 
   test('add() with a SettingsCubit latches hasGoalEver on first add', () async {

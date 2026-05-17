@@ -102,10 +102,7 @@ class PocketYearPreview extends StatelessWidget {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 14,
-                    child: Text('•', style: titleStyle),
-                  ),
+                  SizedBox(width: 14, child: Text('•', style: titleStyle)),
                   Expanded(
                     child: Text(
                       yg.title,

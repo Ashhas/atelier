@@ -48,10 +48,7 @@ class PrefsSettingsRepository implements SettingsRepository {
     );
     await _prefs.setString(
       _kPocketGoalsPreviewCount,
-      _encodeNullableInt(
-        settings.pocketGoalsPreviewCount,
-        _kUnboundedCount,
-      ),
+      _encodeNullableInt(settings.pocketGoalsPreviewCount, _kUnboundedCount),
     );
     await _prefs.setBool(_kHasGoalEver, settings.hasGoalEver);
   }

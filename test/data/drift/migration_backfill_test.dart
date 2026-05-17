@@ -37,7 +37,9 @@ void main() {
     required bool starred,
     required DateTime addedAt,
   }) async {
-    await db.into(db.goalsTable).insert(
+    await db
+        .into(db.goalsTable)
+        .insert(
           GoalsTableCompanion.insert(
             id: id,
             goalCategoryId: catId,
@@ -50,10 +52,11 @@ void main() {
   }
 
   Future<List<({String id, int sortOrder})>> sortOrders(String catId) async {
-    final rows = await (db.select(db.goalsTable)
-          ..where((t) => t.goalCategoryId.equals(catId))
-          ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-        .get();
+    final rows =
+        await (db.select(db.goalsTable)
+              ..where((t) => t.goalCategoryId.equals(catId))
+              ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+            .get();
     return rows.map((r) => (id: r.id, sortOrder: r.sortOrder)).toList();
   }
 
@@ -121,35 +124,38 @@ void main() {
 
     await db.backfillGoalsSortOrder();
 
-    expect(
-      (await sortOrders('cat-a')).map((r) => r.sortOrder).toList(),
-      [0, 1],
-    );
-    expect(
-      (await sortOrders('cat-b')).map((r) => r.sortOrder).toList(),
-      [0, 1],
-    );
+    expect((await sortOrders('cat-a')).map((r) => r.sortOrder).toList(), [
+      0,
+      1,
+    ]);
+    expect((await sortOrders('cat-b')).map((r) => r.sortOrder).toList(), [
+      0,
+      1,
+    ]);
   });
 
-  test('backfill is idempotent — running it twice produces the same order', () async {
-    await seedRaw(
-      id: 'a-1',
-      catId: 'cat-a',
-      starred: true,
-      addedAt: DateTime.utc(2026, 5, 1),
-    );
-    await seedRaw(
-      id: 'a-2',
-      catId: 'cat-a',
-      starred: false,
-      addedAt: DateTime.utc(2026, 5, 2),
-    );
+  test(
+    'backfill is idempotent — running it twice produces the same order',
+    () async {
+      await seedRaw(
+        id: 'a-1',
+        catId: 'cat-a',
+        starred: true,
+        addedAt: DateTime.utc(2026, 5, 1),
+      );
+      await seedRaw(
+        id: 'a-2',
+        catId: 'cat-a',
+        starred: false,
+        addedAt: DateTime.utc(2026, 5, 2),
+      );
 
-    await db.backfillGoalsSortOrder();
-    final first = (await sortOrders('cat-a')).map((r) => r.id).toList();
-    await db.backfillGoalsSortOrder();
-    final second = (await sortOrders('cat-a')).map((r) => r.id).toList();
+      await db.backfillGoalsSortOrder();
+      final first = (await sortOrders('cat-a')).map((r) => r.id).toList();
+      await db.backfillGoalsSortOrder();
+      final second = (await sortOrders('cat-a')).map((r) => r.id).toList();
 
-    expect(second, equals(first));
-  });
+      expect(second, equals(first));
+    },
+  );
 }

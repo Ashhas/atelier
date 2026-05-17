@@ -9,11 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Wraps a [GoalRow] in a host that owns `isExpanded`, mirroring how
 /// `DetailScreen` drives a single-expanded-row contract in production.
 class _GoalRowHost extends StatefulWidget {
-  const _GoalRowHost({
-    required this.goal,
-    this.onToggleStar,
-    this.onRename,
-  });
+  const _GoalRowHost({required this.goal, this.onToggleStar, this.onRename});
 
   final Goal goal;
   final VoidCallback? onToggleStar;

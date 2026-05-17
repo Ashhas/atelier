@@ -49,7 +49,13 @@ void main() {
     testWidgets('renders eyebrow, display title and action button', (
       tester,
     ) async {
-      await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit, settingsCubit: settingsCubit));
+      await tester.pumpWidget(
+        _wrap(
+          const HomeEmptyState(),
+          cubit: cubit,
+          settingsCubit: settingsCubit,
+        ),
+      );
       expect(find.textContaining('BLANK SLATE'), findsOneWidget);
       expect(find.textContaining('Your year'), findsOneWidget);
       expect(find.byType(HomeEmptyStateAction), findsOneWidget);
@@ -58,7 +64,13 @@ void main() {
     testWidgets('tapping action button reveals text field §3.9', (
       tester,
     ) async {
-      await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit, settingsCubit: settingsCubit));
+      await tester.pumpWidget(
+        _wrap(
+          const HomeEmptyState(),
+          cubit: cubit,
+          settingsCubit: settingsCubit,
+        ),
+      );
       await tester.tap(find.byType(HomeEmptyStateAction));
       await tester.pump();
       expect(find.byType(TextField), findsOneWidget);
@@ -66,7 +78,13 @@ void main() {
 
     testWidgets('submitting text calls cubit.addPocket §3.9', (tester) async {
       when(() => cubit.addPocket(any())).thenAnswer((_) async {});
-      await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit, settingsCubit: settingsCubit));
+      await tester.pumpWidget(
+        _wrap(
+          const HomeEmptyState(),
+          cubit: cubit,
+          settingsCubit: settingsCubit,
+        ),
+      );
       await tester.tap(find.byType(HomeEmptyStateAction));
       await tester.pump();
       await tester.enterText(find.byType(TextField), 'Work');
@@ -78,7 +96,13 @@ void main() {
     testWidgets('shows visible ADD pill button after tapping action', (
       tester,
     ) async {
-      await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit, settingsCubit: settingsCubit));
+      await tester.pumpWidget(
+        _wrap(
+          const HomeEmptyState(),
+          cubit: cubit,
+          settingsCubit: settingsCubit,
+        ),
+      );
       await tester.tap(find.byType(HomeEmptyStateAction));
       await tester.pump();
       // The ADD button is rendered next to the TextField in editing mode.
@@ -89,7 +113,13 @@ void main() {
       'tapping the visible ADD button submits text via cubit.addPocket',
       (tester) async {
         when(() => cubit.addPocket(any())).thenAnswer((_) async {});
-        await tester.pumpWidget(_wrap(const HomeEmptyState(), cubit: cubit, settingsCubit: settingsCubit));
+        await tester.pumpWidget(
+          _wrap(
+            const HomeEmptyState(),
+            cubit: cubit,
+            settingsCubit: settingsCubit,
+          ),
+        );
         await tester.tap(find.byType(HomeEmptyStateAction));
         await tester.pump();
         await tester.enterText(find.byType(TextField), 'Body');

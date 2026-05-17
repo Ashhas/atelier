@@ -22,10 +22,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// The [onReset] callback is wired to [DataResetter] + cubit reloads in
 /// [HomeScreen] (Task 8.6).
 class SettingsSheet extends StatefulWidget {
-  const SettingsSheet({super.key, required this.onReset});
+  const SettingsSheet({
+    super.key,
+    required this.onReset,
+    this.scrollController,
+  });
 
   /// Called when the user confirms the destructive reset action.
   final VoidCallback onReset;
+
+  /// Optional scroll controller supplied by a parent
+  /// [DraggableScrollableSheet]. When provided, scroll gestures inside
+  /// the sheet first grow it toward `maxChildSize` and only start
+  /// scrolling the content once the sheet is fully extended.
+  final ScrollController? scrollController;
 
   @override
   State<SettingsSheet> createState() => _SettingsSheetState();
@@ -61,6 +71,12 @@ class _SettingsSheetState extends State<SettingsSheet> {
         AtelierSpacing.x4l + systemNavInset, // 28 + nav bar height
       ),
       child: SingleChildScrollView(
+        controller: widget.scrollController,
+        // Clamping (Android-style) physics so the user doesn't get a
+        // rubber-band bounce when they hit the top or bottom of the
+        // content — the parent DraggableScrollableSheet handles the
+        // "drag the sheet itself" interaction instead.
+        physics: const ClampingScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,

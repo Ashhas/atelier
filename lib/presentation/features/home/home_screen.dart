@@ -76,11 +76,25 @@ class HomeScreen extends StatelessWidget {
     final settingsCubit = context.read<SettingsCubit>();
     showModalBottomSheet<void>(
       context: context,
+      // isScrollControlled lets the sheet exceed the default half-screen
+      // cap so DraggableScrollableSheet's maxChildSize can reach full
+      // height when the user drags up.
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider<SettingsCubit>.value(
         value: settingsCubit,
-        child: SettingsSheet(onReset: () => _handleReset(context)),
+        // Sheet opens at ~70% of screen (popup feel), can be dragged up
+        // to ~95% (full-screen) and dismissed by dragging below 40%.
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, scrollController) => SettingsSheet(
+            scrollController: scrollController,
+            onReset: () => _handleReset(context),
+          ),
+        ),
       ),
     );
   }
